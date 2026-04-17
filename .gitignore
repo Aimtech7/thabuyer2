@@ -1,0 +1,33 @@
+# Root
+.DS_Store
+*.log
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.vscode/
+.idea/
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+frontend/.next/
+frontend/out/
+
+# Backend
+backend/__pycache__/
+backend/*.py[cod]
+backend/*$py.class
+backend/venv/
+backend/env/
+backend/ENV/
+backend/db.sqlite3
+backend/staticfiles/
+backend/media/
+backend/logs/
+backend/.pytest_cache/
+backend/htmlcov/
+backend/.coverage
+backend/.DS_Store
