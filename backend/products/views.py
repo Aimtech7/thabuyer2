@@ -21,6 +21,7 @@ from .serializers import (
     ProductCreateSerializer,
     ProductBulkRowSerializer,
     ProductCompareSerializer,
+    CollectionSerializer,
 )
 
 logger = logging.getLogger(__name__)
@@ -65,6 +66,25 @@ class ProductDetailView(generics.RetrieveAPIView):
             .select_related('seller', 'seller__seller_profile', 'category')
             .prefetch_related('images', 'reviews')
         )
+
+    def get_object(self):
+        obj = super().get_object()
+        # Increment views count
+        from django.db.models import F
+        Product.objects.filter(pk=obj.pk).update(views_count=F('views_count') + 1)
+        obj.refresh_from_db(fields=['views_count'])
+        return obj
+
+class ProductClickView(APIView):
+    """Increment clicks count for a product."""
+    permission_classes = [AllowAny]
+
+    def post(self, request, pk):
+        from django.db.models import F
+        updated = Product.objects.filter(pk=pk, is_active=True).update(clicks_count=F('clicks_count') + 1)
+        if updated:
+            return Response({'status': 'success'})
+        return Response({'status': 'error', 'message': 'Product not found'}, status=404)
 
 
 class ProductCreateView(generics.CreateAPIView):
@@ -255,3 +275,21 @@ class ProductBulkUploadView(APIView):
             'created_skus': created,
             'errors': errors,
         }, status=status.HTTP_207_MULTI_STATUS if errors else status.HTTP_201_CREATED)
+
+class CollectionListCreateView(generics.ListCreateAPIView):
+    """Sellers can list and create custom collections."""
+    serializer_class = CollectionSerializer
+    permission_classes = [IsSeller]
+
+    def get_queryset(self):
+        from .models import Collection
+        return Collection.objects.filter(seller=self.request.user)
+
+class CollectionDetailView(generics.RetrieveUpdateDestroyAPIView):
+    """Sellers can manage a specific collection."""
+    serializer_class = CollectionSerializer
+    permission_classes = [IsSeller]
+
+    def get_queryset(self):
+        from .models import Collection
+        return Collection.objects.filter(seller=self.request.user)

@@ -4,12 +4,17 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { api } from '@/services/api';
 import { toast } from 'sonner';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { TwoFactorSetup } from '@/components/auth/TwoFactorSetup';
+import { AdminAssistedUploadDialog } from '@/components/AdminAssistedUploadDialog';
+import { useStore } from '@/store/useStore';
 import type { User } from '@/types';
 
 export default function AdminDashboard() {
   const [metrics, setMetrics] = useState({ totalUsers: 0, totalProducts: 0, totalOrders: 0, totalRevenue: 0, activeStores: 0, pendingReviews: 0 });
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
+  const { user } = useStore();
 
   useEffect(() => {
     Promise.all([api.getAdminMetrics(), api.getAdminUsers()]).then(([m, u]) => {
@@ -26,12 +31,22 @@ export default function AdminDashboard() {
 
   return (
     <div className="container-main py-8">
-      <div className="flex items-center gap-2 mb-8">
-        <Shield className="w-6 h-6 text-primary" />
-        <h1 className="font-display text-2xl font-bold">Admin Dashboard</h1>
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center gap-2">
+          <Shield className="w-6 h-6 text-primary" />
+          <h1 className="font-display text-2xl font-bold">Admin Dashboard</h1>
+        </div>
+        <AdminAssistedUploadDialog sellers={users.filter(u => u.role === 'seller')} />
       </div>
 
-      {/* Metrics */}
+      <Tabs defaultValue="overview" className="w-full">
+        <TabsList className="mb-6">
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="settings">Settings</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="overview">
+          {/* Metrics */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {[
           { label: 'Total Users', value: metrics.totalUsers.toLocaleString(), icon: Users, color: 'text-primary' },
@@ -76,6 +91,14 @@ export default function AdminDashboard() {
           </div>
         )}
       </div>
+        </TabsContent>
+
+        <TabsContent value="settings">
+          <div className="max-w-2xl">
+            <TwoFactorSetup isEnabled={user?.is2faEnabled} />
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

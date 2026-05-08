@@ -22,6 +22,11 @@ app.conf.beat_schedule = {
         'task': 'admin_panel.tasks.generate_daily_report',
         'schedule': crontab(hour=0, minute=0),
     },
+    # Check for stale prices (not updated in 30 days) daily at 1:00 AM
+    'check-price-freshness': {
+        'task': 'products.tasks.check_price_freshness',
+        'schedule': crontab(hour=1, minute=0),
+    },
 }
 
 

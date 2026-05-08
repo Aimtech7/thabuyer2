@@ -257,3 +257,102 @@ class AdminReportedContentView(generics.ListAPIView):
             'results': serializer.data,
         })
 
+
+class AdminAssistedUploadView(APIView):
+    """
+    Admin: Assisted upload service (FR-02.10).
+    Allows an admin to upload an .xlsx file on behalf of a specific seller.
+    """
+    permission_classes = [IsAdmin]
+    # parser_classes = [MultiPartParser]
+
+    def post(self, request):
+        from products.models import Product, Category
+        from products.serializers import ProductBulkRowSerializer
+        import openpyxl
+
+        file = request.FILES.get('file')
+        seller_id = request.data.get('seller_id')
+
+        if not file or not seller_id:
+            return Response(
+                {'status': 'error', 'message': 'file and seller_id are required.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+            
+        try:
+            seller = User.objects.get(id=seller_id, role='seller')
+        except User.DoesNotExist:
+            return Response(
+                {'status': 'error', 'message': 'Seller not found.'},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        if not file.name.endswith('.xlsx'):
+            return Response(
+                {'status': 'error', 'message': 'Only .xlsx files are accepted.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            wb = openpyxl.load_workbook(file)
+            ws = wb.active
+        except Exception as e:
+            return Response(
+                {'status': 'error', 'message': f'Could not parse file: {e}'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        headers = [cell.value for cell in next(ws.iter_rows(min_row=1, max_row=1))]
+        expected = ['name', 'description', 'price', 'stock_qty', 'SKU', 'category']
+        missing = [h for h in expected if h not in headers]
+        if missing:
+            return Response(
+                {'status': 'error', 'message': f'Missing columns: {missing}'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        col_map = {v: i for i, v in enumerate(headers)}
+        created, errors = [], []
+
+        for row_num, row in enumerate(ws.iter_rows(min_row=2, values_only=True), start=2):
+            if not any(row):
+                continue
+            row_data = {
+                'name': row[col_map['name']],
+                'description': row[col_map.get('description', -1)] or '',
+                'price': row[col_map['price']],
+                'stock_qty': row[col_map['stock_qty']],
+                'SKU': row[col_map['SKU']],
+                'category': row[col_map.get('category', -1)] or '',
+            }
+            serializer = ProductBulkRowSerializer(data=row_data)
+            if serializer.is_valid():
+                data = serializer.validated_data
+                category_name = data.pop('category', '')
+                category = None
+                if category_name:
+                    category, _ = Category.objects.get_or_create(
+                        name=category_name,
+                        defaults={'slug': category_name.lower().replace(' ', '-')}
+                    )
+                try:
+                    Product.objects.create(
+                        seller=seller,
+                        category=category,
+                        **data,
+                    )
+                    created.append(row_data['SKU'])
+                except Exception as e:
+                    errors.append({'row': row_num, 'SKU': row_data.get('SKU'), 'error': str(e)})
+            else:
+                errors.append({'row': row_num, 'data': row_data, 'errors': serializer.errors})
+
+        return Response({
+            'status': 'success',
+            'created_count': len(created),
+            'error_count': len(errors),
+            'created_skus': created,
+            'errors': errors,
+        }, status=status.HTTP_207_MULTI_STATUS if errors else status.HTTP_201_CREATED)
+

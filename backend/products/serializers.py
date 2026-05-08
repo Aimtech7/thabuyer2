@@ -1,7 +1,7 @@
 """products/serializers.py"""
 import uuid
 from rest_framework import serializers
-from .models import Product, ProductImage, Category
+from .models import Product, ProductImage, Category, Collection
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -112,3 +112,26 @@ class ProductCompareSerializer(serializers.Serializer):
     delivery_days = serializers.IntegerField()
     is_lowest_price = serializers.BooleanField()
     price_difference = serializers.DecimalField(max_digits=12, decimal_places=2)
+
+class CollectionSerializer(serializers.ModelSerializer):
+    products = ProductSerializer(many=True, read_only=True)
+    product_ids = serializers.PrimaryKeyRelatedField(
+        queryset=Product.objects.all(), source='products', many=True, write_only=True
+    )
+
+    class Meta:
+        model = Collection
+        fields = ('id', 'name', 'slug', 'products', 'product_ids', 'is_active', 'created_at')
+        read_only_fields = ('id', 'slug', 'created_at')
+
+    def create(self, validated_data):
+        products = validated_data.pop('products', [])
+        seller = self.context['request'].user
+        
+        # generate slug
+        from django.utils.text import slugify
+        slug = slugify(validated_data['name'])
+        
+        collection = Collection.objects.create(seller=seller, slug=slug, **validated_data)
+        collection.products.set(products)
+        return collection

@@ -78,11 +78,18 @@ export async function apiFetch<T = unknown>(
   const url = `${DJANGO_CONFIG.baseUrl}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
   
   const getHeaders = () => {
+    const isFormData = body instanceof FormData;
     const h: Record<string, string> = {
       Accept: 'application/json',
-      ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}),
+      ...(body !== undefined && !isFormData ? { 'Content-Type': 'application/json' } : {}),
       ...headers,
     };
+    
+    // If it's FormData and 'Content-Type' was explicitly provided, 
+    // remove it to let the browser set it automatically with the boundary
+    if (isFormData && h['Content-Type'] === 'multipart/form-data') {
+      delete h['Content-Type'];
+    }
     
     if (requireAuth) {
       const token = tokenStorage.getAccess();
@@ -101,7 +108,11 @@ export async function apiFetch<T = unknown>(
     };
 
     if (body !== undefined) {
-      init.body = typeof body === 'string' ? body : JSON.stringify(body);
+      if (body instanceof FormData) {
+        init.body = body;
+      } else {
+        init.body = typeof body === 'string' ? body : JSON.stringify(body);
+      }
     }
 
     try {

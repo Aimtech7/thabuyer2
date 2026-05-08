@@ -2,9 +2,12 @@ import { useState, useRef } from 'react';
 import { Upload, FileSpreadsheet, AlertCircle, CheckCircle2, X, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { generateProductCode, resetCodeCounter } from '@/lib/productCode';
-import { djangoSeller } from '@/services/django/seller';
+import { DJANGO_CONFIG } from '@/services/django/client';
+import { http } from '@/services/django/client';
+import type { User } from '@/types';
 
 interface ParsedRow {
   row: number;
@@ -21,9 +24,14 @@ interface ParsedRow {
   errors: string[];
 }
 
-export function BulkUploadDialog() {
+interface AdminAssistedUploadDialogProps {
+  sellers: User[];
+}
+
+export function AdminAssistedUploadDialog({ sellers }: AdminAssistedUploadDialogProps) {
   const [open, setOpen] = useState(false);
   const [file, setFile] = useState<File | null>(null);
+  const [selectedSellerId, setSelectedSellerId] = useState<string>('');
   const [parsedData, setParsedData] = useState<ParsedRow[]>([]);
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -79,16 +87,28 @@ export function BulkUploadDialog() {
 
   const handleUpload = async () => {
     if (hasErrors) { toast.error('Please fix all errors before uploading'); return; }
+    if (!selectedSellerId) { toast.error('Please select a seller'); return; }
     if (!file) return;
+
     setUploading(true);
+    
     try {
-      await djangoSeller.bulkUploadProducts(file);
-      toast.success(`${validCount} products uploaded successfully!`);
+      if (DJANGO_CONFIG.enabled) {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('seller_id', selectedSellerId);
+        
+        await http.post('/admin/assisted-upload/', formData, { 
+          headers: { 'Content-Type': 'multipart/form-data' } 
+        });
+      }
+      
+      toast.success(`${validCount} products uploaded for the seller successfully!`);
       setOpen(false);
-      setFile(null);
-      setParsedData([]);
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to upload products');
+      resetter();
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to upload file');
     } finally {
       setUploading(false);
     }
@@ -104,18 +124,34 @@ export function BulkUploadDialog() {
     URL.revokeObjectURL(url);
   };
 
-  const resetter = () => { setFile(null); setParsedData([]); if (fileRef.current) fileRef.current.value = ''; };
+  const resetter = () => { setFile(null); setParsedData([]); setSelectedSellerId(''); if (fileRef.current) fileRef.current.value = ''; };
 
   return (
     <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) resetter(); }}>
       <DialogTrigger asChild>
-        <Button variant="outline"><Upload className="w-4 h-4 mr-2" />Bulk Upload</Button>
+        <Button variant="outline"><Upload className="w-4 h-4 mr-2" />Assisted Upload</Button>
       </DialogTrigger>
       <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-        <DialogHeader><DialogTitle>Bulk Catalog Upload</DialogTitle></DialogHeader>
+        <DialogHeader><DialogTitle>Admin Assisted Catalog Upload</DialogTitle></DialogHeader>
 
         {!file ? (
           <div className="space-y-4">
+            <div className="mb-4">
+              <label className="text-sm font-medium mb-1 block">Select Seller</label>
+              <Select value={selectedSellerId} onValueChange={setSelectedSellerId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a seller to upload products for" />
+                </SelectTrigger>
+                <SelectContent>
+                  {sellers.map((seller) => (
+                    <SelectItem key={seller.id} value={seller.id}>
+                      {seller.fullName} ({seller.businessName || 'No Business Name'})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
             <div className="border-2 border-dashed rounded-xl p-8 text-center hover:border-primary/50 transition cursor-pointer" onClick={() => fileRef.current?.click()}>
               <FileSpreadsheet className="w-10 h-10 text-muted-foreground/40 mx-auto mb-3" />
               <p className="font-medium text-sm mb-1">Drop your file here or click to browse</p>
@@ -135,6 +171,13 @@ export function BulkUploadDialog() {
           </div>
         ) : (
           <div className="space-y-4">
+            <div className="mb-4">
+              <label className="text-sm font-medium mb-1 block">Selected Seller</label>
+              <div className="p-2 border rounded-md bg-secondary/20">
+                {sellers.find(s => s.id === selectedSellerId)?.fullName || 'None'}
+              </div>
+            </div>
+            
             <div className="flex items-center justify-between p-3 rounded-lg bg-secondary/50">
               <div className="flex items-center gap-2">
                 <FileSpreadsheet className="w-5 h-5 text-primary" />
@@ -195,7 +238,7 @@ export function BulkUploadDialog() {
 
             <div className="flex gap-2 justify-end">
               <Button variant="outline" onClick={resetter}>Choose Different File</Button>
-              <Button onClick={handleUpload} disabled={uploading || parsedData.length === 0}>
+              <Button onClick={handleUpload} disabled={uploading || parsedData.length === 0 || !selectedSellerId}>
                 {uploading ? 'Uploading...' : `Upload ${validCount} Products`}
               </Button>
             </div>

@@ -23,7 +23,13 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [forgotMode, setForgotMode] = useState(false);
   const [forgotEmail, setForgotEmail] = useState('');
-  const { signIn, resetPassword } = useAuth();
+  
+  // 2FA state
+  const [requires2FA, setRequires2FA] = useState(false);
+  const [tempToken, setTempToken] = useState('');
+  const [otp, setOtp] = useState('');
+
+  const { signIn, login2FA, resetPassword } = useAuth();
   const { user, isAuthenticated } = useStore();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -45,11 +51,33 @@ export default function LoginPage() {
   const onSubmit = async (data: LoginForm) => {
     setLoading(true);
     try {
-      await signIn(data.email, data.password);
-      toast.success('Welcome back!');
-      // Navigation will happen via useEffect when user state updates
+      const result = await signIn(data.email, data.password);
+      if (result.requires2FA) {
+        setRequires2FA(true);
+        setTempToken(result.tempToken || '');
+        toast.info('Two-Factor Authentication required');
+      } else {
+        toast.success('Welcome back!');
+      }
     } catch (err: any) {
       toast.error(err?.message || 'Login failed. Check your credentials.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handle2FASubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!otp) {
+      toast.error('Please enter the OTP');
+      return;
+    }
+    setLoading(true);
+    try {
+      await login2FA(tempToken, otp);
+      toast.success('Welcome back!');
+    } catch (err: any) {
+      toast.error(err?.message || 'Invalid OTP');
     } finally {
       setLoading(false);
     }
@@ -80,7 +108,20 @@ export default function LoginPage() {
           <p className="text-sm text-muted-foreground mt-1">{isSeller ? 'Login to your seller account' : 'Login to your account'}</p>
         </div>
 
-        {forgotMode ? (
+        {requires2FA ? (
+          <form onSubmit={handle2FASubmit} className="space-y-4 bg-card p-6 rounded-xl border">
+            <h2 className="font-display font-semibold text-lg">Two-Factor Authentication</h2>
+            <p className="text-sm text-muted-foreground">Enter the 6-digit code from your authenticator app.</p>
+            <div>
+              <Label htmlFor="otp">Authentication Code</Label>
+              <Input id="otp" type="text" placeholder="000000" maxLength={6} value={otp} onChange={e => setOtp(e.target.value)} autoFocus />
+            </div>
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}Verify
+            </Button>
+            <button type="button" onClick={() => setRequires2FA(false)} className="text-sm text-primary hover:underline w-full text-center">Back to Login</button>
+          </form>
+        ) : forgotMode ? (
           <div className="space-y-4 bg-card p-6 rounded-xl border">
             <h2 className="font-display font-semibold text-lg">Reset Password</h2>
             <p className="text-sm text-muted-foreground">Enter your email and we'll send you a reset link.</p>

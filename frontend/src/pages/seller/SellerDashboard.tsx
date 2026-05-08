@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Package, Plus, Pencil, Trash2, DollarSign, ShoppingBag, TrendingUp, Clock, Copy, Check } from 'lucide-react';
+import { Package, Plus, Pencil, Trash2, DollarSign, ShoppingBag, TrendingUp, Clock, Copy, Check, Eye, MousePointerClick, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -15,6 +15,9 @@ import { djangoSeller } from '@/services/django';
 import { DJANGO_CONFIG } from '@/services/django/client';
 import { toast } from 'sonner';
 import { generateProductCode, CATEGORIES, MAKES, TYPES } from '@/lib/productCode';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { TwoFactorSetup } from '@/components/auth/TwoFactorSetup';
+import { useStore } from '@/store/useStore';
 import type { Product, StoreListing } from '@/types';
 
 const productSchema = z.object({
@@ -33,8 +36,14 @@ type ProductForm = z.infer<typeof productSchema>;
 
 export default function SellerDashboard() {
   const [products, setProducts] = useState<(Product & { listings: StoreListing[] })[]>([]);
-  const [metrics, setMetrics] = useState({ totalProducts: 0, totalOrders: 0, revenue: 0, pendingOrders: 0 });
+  const [metrics, setMetrics] = useState({ 
+    totalProducts: 0, totalOrders: 0, revenue: 0, pendingOrders: 0, 
+    totalViews: 0, totalClicks: 0, staleProductsCount: 0 
+  });
+  const [collections, setCollections] = useState<any[]>([]);
+  const [promotions, setPromotions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const { user } = useStore();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [generatedCode, setGeneratedCode] = useState('');
@@ -70,10 +79,14 @@ export default function SellerDashboard() {
     const load = async () => {
       try {
         if (DJANGO_CONFIG.enabled) {
-          const [p, d] = await Promise.all([
+          const [p, d, colls, promos] = await Promise.all([
             djangoSeller.products(),
             djangoSeller.dashboard(),
+            djangoSeller.getCollections(),
+            djangoSeller.getPromoPricing(),
           ]);
+          setCollections(colls as any[]);
+          setPromotions(promos as any[]);
           // Adapt Django products to UI shape (attach empty listings if backend doesn't include them)
           setProducts(
             (p as any[]).map((prod) => ({
@@ -86,6 +99,9 @@ export default function SellerDashboard() {
             totalOrders: d.totalOrders ?? 0,
             revenue: d.revenue ?? 0,
             pendingOrders: d.pendingOrders ?? 0,
+            totalViews: d.totalViews ?? 0,
+            totalClicks: d.totalClicks ?? 0,
+            staleProductsCount: d.staleProductsCount ?? 0,
           });
         } else {
           const [p, m] = await Promise.all([
@@ -254,6 +270,16 @@ export default function SellerDashboard() {
         </div>
       </div>
 
+      <Tabs defaultValue="overview" className="w-full">
+        <TabsList className="mb-6 flex flex-wrap h-auto gap-1 p-1 bg-secondary/50 rounded-xl">
+          <TabsTrigger value="overview" className="rounded-lg">Overview</TabsTrigger>
+          <TabsTrigger value="analytics" className="rounded-lg">Analytics</TabsTrigger>
+          <TabsTrigger value="collections" className="rounded-lg">Collections</TabsTrigger>
+          <TabsTrigger value="promotions" className="rounded-lg">Promotions</TabsTrigger>
+          <TabsTrigger value="settings" className="rounded-lg">Settings</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="overview">
       {/* Metrics */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {[
@@ -313,6 +339,107 @@ export default function SellerDashboard() {
           </div>
         )}
       </div>
+        </TabsContent>
+
+        <TabsContent value="analytics" className="space-y-6">
+          <h2 className="text-xl font-bold font-display">Performance Analytics</h2>
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="rounded-xl border bg-card p-4">
+              <div className="flex items-center justify-between mb-2">
+                <Eye className="w-5 h-5 text-primary" />
+              </div>
+              <p className="font-display text-2xl font-bold">{metrics.totalViews}</p>
+              <p className="text-xs text-muted-foreground">Total Product Views</p>
+            </div>
+            <div className="rounded-xl border bg-card p-4">
+              <div className="flex items-center justify-between mb-2">
+                <MousePointerClick className="w-5 h-5 text-success" />
+              </div>
+              <p className="font-display text-2xl font-bold">{metrics.totalClicks}</p>
+              <p className="text-xs text-muted-foreground">Total Product Clicks</p>
+            </div>
+            <div className="rounded-xl border bg-card p-4">
+              <div className="flex items-center justify-between mb-2">
+                <AlertTriangle className="w-5 h-5 text-warning" />
+              </div>
+              <p className="font-display text-2xl font-bold">{metrics.staleProductsCount}</p>
+              <p className="text-xs text-muted-foreground">Stale Products (&gt;30 days without update)</p>
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="collections" className="space-y-6">
+          <div className="flex items-center justify-between border-b pb-4">
+             <h2 className="text-xl font-bold font-display">Catalog Collections</h2>
+             <Button size="sm"><Plus className="w-4 h-4 mr-2" />New Collection</Button>
+          </div>
+          {collections.length === 0 ? (
+            <div className="p-8 text-center text-muted-foreground bg-secondary/20 rounded-xl border border-dashed">
+              No collections found. Create one to organize your products!
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {collections.map((collection: any) => (
+                <div key={collection.id} className="p-4 rounded-xl border bg-card hover:border-primary/50 transition">
+                  <h3 className="font-bold text-lg">{collection.name}</h3>
+                  <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{collection.description}</p>
+                  <div className="mt-4 flex items-center justify-between">
+                    <span className="text-xs font-medium bg-primary/10 text-primary px-2 py-1 rounded-full">
+                      {collection.products?.length || 0} Products
+                    </span>
+                    <Button variant="ghost" size="sm" className="h-8 text-xs">Manage</Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="promotions" className="space-y-6">
+          <div className="flex items-center justify-between border-b pb-4">
+             <h2 className="text-xl font-bold font-display">Promotional Pricing & Coupons</h2>
+             <Button size="sm"><Plus className="w-4 h-4 mr-2" />New Promotion</Button>
+          </div>
+          {promotions.length === 0 ? (
+            <div className="p-8 text-center text-muted-foreground bg-secondary/20 rounded-xl border border-dashed">
+              No active promotions. Run a sale to boost your visibility!
+            </div>
+          ) : (
+            <div className="rounded-xl border overflow-hidden">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-secondary/50 border-b">
+                    <th className="text-left p-3 font-medium">Product</th>
+                    <th className="text-left p-3 font-medium">Promo Price</th>
+                    <th className="text-left p-3 font-medium">Valid From</th>
+                    <th className="text-left p-3 font-medium">Valid Until</th>
+                    <th className="text-right p-3 font-medium">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y">
+                  {promotions.map((promo: any) => (
+                    <tr key={promo.id} className="hover:bg-secondary/20 transition">
+                      <td className="p-3 font-medium">{products.find(p => String(p.id) === String(promo.product))?.name || `Product #${promo.product}`}</td>
+                      <td className="p-3 font-semibold text-primary">${promo.promo_price}</td>
+                      <td className="p-3 text-muted-foreground">{new Date(promo.start_date).toLocaleDateString()}</td>
+                      <td className="p-3 text-muted-foreground">{new Date(promo.end_date).toLocaleDateString()}</td>
+                      <td className="p-3 text-right">
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-destructive"><Trash2 className="w-4 h-4" /></Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="settings">
+          <div className="max-w-2xl">
+            <TwoFactorSetup isEnabled={user?.is2faEnabled} />
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

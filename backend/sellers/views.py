@@ -61,6 +61,20 @@ class SellerDashboardView(APIView):
         from reviews.serializers import ReviewSerializer
         review_data = ReviewSerializer(recent_reviews, many=True).data
 
+        # Analytics
+        analytics = products.aggregate(
+            total_views=Sum('views_count'),
+            total_clicks=Sum('clicks_count')
+        )
+        total_views = analytics['total_views'] or 0
+        total_clicks = analytics['total_clicks'] or 0
+
+        # Stale products
+        from django.utils import timezone
+        from datetime import timedelta
+        threshold_date = timezone.now() - timedelta(days=30)
+        stale_products_count = products.filter(updated_at__lt=threshold_date, is_active=True).count()
+
         return Response({
             'status': 'success',
             'data': {
@@ -70,6 +84,9 @@ class SellerDashboardView(APIView):
                 'total_revenue': str(total_revenue),
                 'pending_orders': pending_orders,
                 'recent_reviews': review_data,
+                'total_views': total_views,
+                'total_clicks': total_clicks,
+                'stale_products_count': stale_products_count,
             },
         })
 

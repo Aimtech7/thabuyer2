@@ -47,6 +47,7 @@ export function useAuth() {
     phone: string;
     role: UserRole;
     businessName?: string;
+    commissionAccepted?: boolean;
   }) => {
     if (useDjango) {
       const { user } = await djangoAuth.register({
@@ -57,6 +58,7 @@ export function useAuth() {
         phone: data.phone,
         role: data.role,
         businessName: data.businessName,
+        commission_accepted: data.commissionAccepted,
       });
       setUser(user);
       return { user };
@@ -66,13 +68,42 @@ export function useAuth() {
 
   const signIn = async (email: string, password: string) => {
     if (useDjango) {
-      const { user } = await djangoAuth.login({ email, password });
-      setUser(user);
-      return { user };
+      const result = await djangoAuth.login({ email, password });
+      if (result.requires2FA) {
+        return { requires2FA: true, tempToken: result.tempToken };
+      }
+      if (result.user) {
+        setUser(result.user);
+        return { user: result.user, requires2FA: false };
+      }
+      throw new Error('Login failed');
     }
     const { user } = await mockAuth.signIn(email, password);
     setUser(user);
-    return { user };
+    return { user, requires2FA: false };
+  };
+
+  const login2FA = async (tempToken: string, code: string) => {
+    if (useDjango) {
+      const { user } = await djangoAuth.login2FA(tempToken, code);
+      setUser(user);
+      return { user };
+    }
+    throw new Error('2FA not supported in mock mode');
+  };
+
+  const setup2FA = async () => {
+    if (useDjango) {
+      return await djangoAuth.setup2FA();
+    }
+    throw new Error('2FA not supported in mock mode');
+  };
+
+  const verify2FASetup = async (code: string) => {
+    if (useDjango) {
+      return await djangoAuth.verify2FASetup(code);
+    }
+    throw new Error('2FA not supported in mock mode');
   };
 
   const signOut = async () => {
@@ -95,5 +126,5 @@ export function useAuth() {
     await mockAuth.resetPassword(email);
   };
 
-  return { loading, signUp, signIn, signOut, resetPassword };
+  return { loading, signUp, signIn, login2FA, setup2FA, verify2FASetup, signOut, resetPassword };
 }

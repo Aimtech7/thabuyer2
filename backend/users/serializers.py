@@ -53,8 +53,8 @@ class LoginSerializer(serializers.Serializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('id', 'name', 'email', 'phone', 'role', 'verified', 'date_joined')
-        read_only_fields = ('id', 'role', 'verified', 'date_joined')
+        fields = ('id', 'name', 'email', 'phone', 'role', 'verified', 'date_joined', 'is_2fa_enabled')
+        read_only_fields = ('id', 'role', 'verified', 'date_joined', 'is_2fa_enabled')
 
 
 class UserAdminSerializer(serializers.ModelSerializer):
@@ -64,7 +64,7 @@ class UserAdminSerializer(serializers.ModelSerializer):
         model = User
         fields = (
             'id', 'name', 'email', 'phone', 'role',
-            'verified', 'is_active', 'date_joined', 'last_login'
+            'verified', 'is_active', 'date_joined', 'last_login', 'is_2fa_enabled'
         )
         read_only_fields = ('id', 'date_joined', 'last_login')
 
@@ -74,3 +74,14 @@ class TokenResponseSerializer(serializers.Serializer):
     access = serializers.CharField()
     refresh = serializers.CharField()
     user = UserSerializer()
+
+class TwoFactorSetupSerializer(serializers.Serializer):
+    secret = serializers.CharField()
+    provisioning_uri = serializers.CharField()
+
+class TwoFactorVerifySerializer(serializers.Serializer):
+    otp = serializers.CharField(max_length=6)
+
+class TwoFactorLoginVerifySerializer(serializers.Serializer):
+    temp_token = serializers.CharField()
+    otp = serializers.CharField(max_length=6)

@@ -22,6 +22,8 @@ class SellerProfile(models.Model):
         max_digits=5, decimal_places=2, default=5.00,
         validators=[MinValueValidator(0), MaxValueValidator(100)]
     )
+    commission_accepted = models.BooleanField(default=False)
+    commission_accepted_at = models.DateTimeField(null=True, blank=True)
     contact_email = models.EmailField(blank=True)
     contact_phone = models.CharField(max_length=20, blank=True)
     address = models.TextField(blank=True)

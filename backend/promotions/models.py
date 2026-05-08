@@ -37,3 +37,25 @@ class Coupon(models.Model):
         if self.valid_until and now > self.valid_until:
             return False
         return True
+
+class PromoPricing(models.Model):
+    product = models.OneToOneField('products.Product', on_delete=models.CASCADE, related_name='promo_pricing')
+    promo_price = models.DecimalField(max_digits=12, decimal_places=2, validators=[MinValueValidator(0)])
+    start_date = models.DateTimeField()
+    end_date = models.DateTimeField()
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'promo_pricing'
+        ordering = ['-start_date']
+
+    def __str__(self):
+        return f"Promo for {self.product.name} at {self.promo_price}"
+
+    @property
+    def is_currently_active(self):
+        from django.utils import timezone
+        if not self.is_active:
+            return False
+        now = timezone.now()
+        return self.start_date <= now <= self.end_date

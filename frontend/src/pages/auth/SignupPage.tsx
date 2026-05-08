@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
@@ -46,7 +46,7 @@ export default function SignupPage() {
   const navigate = useNavigate();
 
   const schema = role === 'seller' ? sellerSchema : buyerSchema;
-  const { register, handleSubmit, formState: { errors }, reset } = useForm<SellerForm>({
+  const { register, handleSubmit, control, formState: { errors }, reset } = useForm<SellerForm>({
     resolver: zodResolver(schema as any),
   });
 
@@ -60,6 +60,7 @@ export default function SignupPage() {
         phone: data.phone,
         role: role as UserRole,
         businessName: data.businessName,
+        commissionAccepted: data.commissionAccepted,
       });
       setShowVerification(true);
       toast.success('Account created! Please verify your email.');
@@ -163,7 +164,17 @@ export default function SignupPage() {
 
           {role === 'seller' && (
             <div className="flex items-start gap-2">
-              <Checkbox id="commission" {...register('commissionAccepted')} onCheckedChange={() => {}} />
+              <Controller
+                name="commissionAccepted"
+                control={control}
+                render={({ field }) => (
+                  <Checkbox 
+                    id="commission" 
+                    checked={field.value} 
+                    onCheckedChange={field.onChange} 
+                  />
+                )}
+              />
               <div>
                 <label htmlFor="commission" className="text-sm">I accept the <a href="#" className="text-primary underline">Commission Policy</a> (10% per transaction)</label>
                 {errors.commissionAccepted && <p className="text-xs text-destructive mt-1">{errors.commissionAccepted.message}</p>}

@@ -23,14 +23,24 @@ class SellerProfileSerializer(serializers.ModelSerializer):
 
 
 class SellerProfileCreateSerializer(serializers.ModelSerializer):
+    commission_accepted = serializers.BooleanField(required=True)
+
     class Meta:
         model = SellerProfile
-        fields = ('business_name', 'business_description', 'contact_email', 'contact_phone', 'address')
+        fields = ('business_name', 'business_description', 'contact_email', 'contact_phone', 'address', 'commission_accepted')
+
+    def validate_commission_accepted(self, value):
+        if not value:
+            raise serializers.ValidationError("You must accept the commission policy.")
+        return value
 
     def create(self, validated_data):
+        from django.utils import timezone
         user = self.context['request'].user
         if SellerProfile.objects.filter(user=user).exists():
             raise serializers.ValidationError('Seller profile already exists.')
+        
+        validated_data['commission_accepted_at'] = timezone.now()
         return SellerProfile.objects.create(user=user, **validated_data)
 
 

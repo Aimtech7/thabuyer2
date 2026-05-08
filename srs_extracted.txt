@@ -1,0 +1,2334 @@
+SYSTEMS REQUIREMENTS SPECIFICATION  v2.0  |  Multi-Store E-Commerce & Price Comparison Platform    ·    Benchmarked against Jumia KE · PriceCheck ZA · Google Shopping · Price.com · Shopify
+
+
+
+▪  ▪  ▪
+
+SYSTEMS REQUIREMENTS SPECIFICATION
+
+Multi-Store E-Commerce & Price Comparison Platform
+
+Benchmarked Against: Jumia KE  ·  PriceCheck ZA  ·  Google Shopping  ·  Price.com  ·  Shopify
+
+Document Type
+
+Systems Requirements Specification (SRS)
+
+Version
+
+2.0 — Commercial Release
+
+Date
+
+March 2026
+
+Status
+
+Approved — Ready for Development
+
+Prepared By
+
+Business Systems Analysis Team
+
+Classification
+
+Commercial — Confidential
+
+Benchmark Sources
+
+Jumia KE, PriceCheck ZA, Google Shopping, Price.com, Shopify
+
+
+
+▪  ▪  ▪
+
+
+
+
+
+
+
+The Buyer
+
+
+
+Shop Smart, Live Better
+
+
+
+
+
+
+
+www.thabuyer.com
+
+
+
+
+
+The Buyer
+
+
+
+Shop Smart, Live Better
+
+
+
+
+
+
+
+www.thabuyer.com
+
+
+
+
+1. Introduction
+
+1.1 Purpose
+
+This Systems Requirements Specification (SRS) defines the complete functional and non-functional requirements for a Multi-Store E-Commerce and Price Comparison Platform. It is the authoritative reference document for the development team, business analysts, quality assurance engineers, and all project stakeholders throughout the system lifecycle.
+
+Version 2.0 integrates competitive benchmarking findings drawn from five leading platforms — Jumia Kenya, PriceCheck South Africa, Google Shopping, Price.com, and Shopify — to ensure the system is commercially viable, feature-competitive, and aligned with proven industry patterns.
+
+
+
+1.2 Scope
+
+The platform is a web-based multi-vendor marketplace enabling sellers to self-onboard and manage product catalogues, and buyers to discover, compare prices, and purchase from multiple stores in a single session. The system scope encompasses:
+
+Seller onboarding, identity verification, and catalogue management (individual and bulk)
+
+Buyer registration, real-time multi-store search, price comparison, cart, and checkout
+
+AI-assisted price intelligence and lowest-price highlighting across all registered stores
+
+Community social layer: product discussions, ratings, reviews, and follow features
+
+Company profile, supplier directory, and how-to-sell static content pages
+
+Platform administration: user management, content moderation, analytics, and reporting
+
+Commission management, seller performance tracking, and payout dashboards
+
+
+
+1.3 Definitions, Acronyms & Abbreviations
+
+Term / Acronym
+
+Definition
+
+SRS
+
+Systems Requirements Specification
+
+UC
+
+Use Case
+
+Actor
+
+Any person, system or organization that interacts with the platform
+
+Seller / Vendor
+
+A registered business or individual who lists products for sale
+
+Buyer / Customer
+
+A registered user who searches and purchases products
+
+Admin
+
+Platform administrator with elevated management privileges
+
+Cart
+
+Virtual shopping basket for accumulating selected products
+
+SKU
+
+Stock Keeping Unit — unique product identifier per seller
+
+API
+
+Application Programming Interface
+
+RBAC
+
+Role-Based Access Control
+
+OAuth 2.0
+
+Open standard for token-based third-party authentication
+
+NFR
+
+Non-Functional Requirement
+
+PCI-DSS
+
+Payment Card Industry Data Security Standard
+
+WCAG
+
+Web Content Accessibility Guidelines
+
+US$
+
+US Dollars — default platform currency
+
+Vendor Hub
+
+Seller-facing dashboard for managing listings, orders, and analytics
+
+Price Intelligence
+
+Automated real-time monitoring and comparison of prices across all sellers
+
+AI Buying Tool
+
+System feature that automatically recommends the best-value option to the buyer
+
+
+
+1.4 References & Benchmarks
+
+Reference
+
+Source
+
+Relevance to This SRS
+
+Initial Procedure Document — Project Brief
+
+Client upload
+
+Foundation scope and product examples
+
+IEEE Std 830-1998: SRS Best Practice
+
+IEEE
+
+Document structure and quality standard
+
+OWASP Web Application Security Top 10
+
+OWASP
+
+Security requirements NFR-04, NFR-05
+
+WCAG 2.1 Level AA
+
+W3C
+
+Accessibility requirements NFR-06
+
+Jumia Kenya (jumia.co.ke)
+
+Competitive benchmark
+
+Seller onboarding, bulk upload, commission model
+
+PriceCheck South Africa (pricecheck.co.za)
+
+Competitive benchmark
+
+Price comparison engine, real-time price refresh
+
+Google Shopping (shopping.google.com)
+
+Competitive benchmark
+
+Feed-based bulk upload, search aggregation
+
+Price.com (price.com)
+
+Competitive benchmark
+
+AI buying tool, social discussion, 1B+ product scale
+
+Shopify Marketplace (shopify.com)
+
+Competitive benchmark
+
+Unlimited SKU management, payment gateway patterns
+
+
+
+
+2. System Overview
+
+2.1 Business Context & Market Opportunity
+
+The platform targets a demonstrable market gap in the ICT and electronics retail sector: buyers currently have no unified digital touchpoint to compare product availability and pricing across multiple local stores, while sellers lack a low-friction, high-visibility digital sales channel.
+
+Competitive benchmarking confirms the commercial viability of this model. Jumia Kenya has demonstrated that multi-vendor seller onboarding and bulk catalogue upload drives rapid inventory growth in African markets. PriceCheck South Africa has proven that real-time price monitoring across retailers, refreshed multiple times daily, is a primary driver of buyer retention. Google Shopping has established feed-based product ingestion as the industry standard for bulk sellers onboarding at scale. Price.com has demonstrated that AI-assisted buying tools comparing over one billion products significantly increase conversion rates. Shopify has confirmed that unlimited SKU management with integrated payment gateways removes the primary friction points in seller adoption.
+
+This platform synthesizes all five proven patterns into a single, locally optimized solution.
+
+
+
+2.2 System Architecture Overview
+
+The platform follows a three-tier web architecture, with each tier mapped to its recommended technology stack and directly referenced benchmark implementation:
+
+Tier
+
+Component
+
+Technology
+
+Benchmark
+
+Presentation
+
+Responsive Web UI — Landing, Vendor Hub, Buyer Portal, Social, Admin
+
+React.js / Next.js
+
+Jumia Vendor Center, Shopify Storefront
+
+Application
+
+REST API, Business Logic, RBAC Auth, Price Intelligence Engine, Search
+
+Node.js / Django REST + Elasticsearch
+
+PriceCheck Engine, Google Shopping API
+
+Data
+
+Relational DB (users, products, orders), File Storage (Excel/images), Cache
+
+PostgreSQL + AWS S3 + Redis
+
+Price.com 1B product scale, Shopify data model
+
+
+
+
+
+Architecture Benchmark Note
+
+Jumia Kenya's three-tier microservices architecture processes over 6 million product listings across 10+ African markets — validating this stack's scalability for the target market.
+
+
+
+2.3 Key Stakeholders
+
+Stakeholder
+
+Role
+
+Key Interest
+
+Benchmark Analogue
+
+Sellers / Vendors
+
+Product providers, content owners
+
+Easy onboarding, product visibility, sales conversion, payout clarity
+
+Jumia Vendor Hub, Shopify Merchant
+
+Buyers / Customers
+
+End consumers
+
+Real-time price comparison, trusted vendors, smooth checkout
+
+PriceCheck ZA, Price.com Buyer
+
+Platform Administrator
+
+System & content manager
+
+User management, moderation, analytics, revenue reporting
+
+Jumia Admin, Shopify Admin
+
+Business Owner
+
+Platform sponsor
+
+Revenue, growth, brand reputation, commission income
+
+Business model: Jumia, PriceCheck
+
+Development Team
+
+Builders & maintainers
+
+Clear requirements, technical feasibility, test coverage
+
+—
+
+
+
+2.4 Core Feature Summary
+
+The following eight features constitute the commercially essential capability set, each validated by at least one benchmark platform:
+
+
+
+#
+
+Feature
+
+Description
+
+Benchmark Source
+
+1
+
+Seller Self-Onboarding
+
+Free seller registration via Vendor Hub; identity verification; commission agreement
+
+Jumia KE — Vendor Hub
+
+2
+
+Bulk & Manual Product Upload
+
+Individual web-form entry and Excel/feed bulk upload with validation and error reporting
+
+Jumia KE, Google Shopping
+
+3
+
+Real-Time Price Comparison Engine
+
+Prices monitored across all stores, multiple times daily; lowest price highlighted per product
+
+PriceCheck ZA, Google Shopping
+
+4
+
+AI-Assisted Buying Tool
+
+Automated recommendation of best-value option across 1M+ products based on price, stock, rating
+
+Price.com AI Tool
+
+5
+
+Unified Cart & Checkout
+
+Cross-store cart; per-store subtotals; integrated payment gateway with secondary fallback
+
+Shopify, Jumia KE
+
+6
+
+Social Discussion & Review Module
+
+Community threads per product; ratings, reviews, likes, and follow functionality
+
+Price.com, Jumia KE
+
+7
+
+Seller Performance Dashboard
+
+Commission tracking, payout history, order analytics, and inventory health metrics
+
+Shopify Merchant Analytics
+
+8
+
+Platform Administration Suite
+
+User management, content moderation, fraud alerts, revenue reporting, and SEO controls
+
+Jumia Admin, PriceCheck Admin
+
+
+
+
+3. Functional Requirements
+
+All functional requirements are classified by priority: HIGH (must-have for launch), MEDIUM (required within 90 days of launch), LOW (planned future enhancement). Requirements in bold denote new features added from competitive benchmarking.
+
+
+
+3.1 FR-01: User Registration & Authentication
+
+Req. ID
+
+Priority
+
+Requirement Description
+
+FR-01.1
+
+HIGH
+
+The system shall allow new users to register as either Seller or Buyer by selecting a role during sign-up.
+
+FR-01.2
+
+HIGH
+
+The system should collect full name, business name (sellers), email address, phone number, and password during registration.
+
+FR-01.3
+
+HIGH
+
+The system shall send an email verification link upon registration; unverified accounts shall be restricted from transacting.
+
+FR-01.4
+
+HIGH
+
+The system shall authenticate users via email/password with bcrypt-hashed credential storage.
+
+FR-01.5
+
+MEDIUM
+
+The system shall support OAuth 2.0 social login via Google and Facebook. [Benchmark: Jumia KE, Shopify]
+
+FR-01.6
+
+HIGH
+
+The system shall enforce role-based access control (RBAC) providing distinct Seller, Buyer, and Admin portal experiences.
+
+FR-01.7
+
+HIGH
+
+The system should require sellers to digitally accept the platform's Commission Policy before account activation. [Benchmark: Jumia Vendor Hub]
+
+FR-01.8
+
+MEDIUM
+
+The system shall support two-factor authentication (2FA) via SMS or authenticator app for all account roles.
+
+
+
+3.2 FR-02: Seller Product Management & Vendor Hub
+
+Req. ID
+
+Priority
+
+Requirement Description
+
+FR-02.1
+
+HIGH
+
+The system shall provide a Vendor Hub dashboard where sellers manage listings, view orders, track performance, and access payout history. [Benchmark: Jumia Vendor Center]
+
+FR-02.2
+
+HIGH
+
+The system shall allow sellers to add products individually via a web form: product name, description, price, category, stock quantity, images, and SKU.
+
+FR-02.3
+
+HIGH
+
+The system shall allow sellers to upload products in bulk via a standardized Excel (.xlsx) template with field validation. [Benchmark: Jumia KE, Google Shopping feed]
+
+FR-02.4
+
+HIGH
+
+The system shall validate each row of an uploaded Excel file and generate a downloadable error report for rejected rows, processing valid rows independently.
+
+FR-02.5
+
+HIGH
+
+The system shall preserve the seller-provided product name exactly as entered without system-level modification.
+
+FR-02.6
+
+HIGH
+
+The system shall allow sellers to edit price, stock quantity, description, and availability status at any time from the Vendor Hub.
+
+FR-02.7
+
+MEDIUM
+
+The system shall prompt sellers to confirm product prices every 30 days to maintain data accuracy. [Benchmark: PriceCheck ZA price freshness policy]
+
+FR-02.8
+
+MEDIUM
+
+The system shall provide sellers with catalogue performance analytics: views, click-through rates, conversion rates, and revenue per listing. [Benchmark: Shopify Merchant Analytics]
+
+FR-02.9
+
+LOW
+
+The system shall allow sellers to organize products into custom collections and apply promotional pricing with configurable start/end dates.
+
+FR-02.10
+
+MEDIUM
+
+The system should support an Assisted Upload Service allowing platform staff to ingest a seller's first catalogue from a spreadsheet or email attachment on their behalf. [Benchmark: Jumia onboarding concierge]
+
+
+
+3.3 FR-03: Buyer Search, Price Intelligence & Comparison
+
+Req. ID
+
+Priority
+
+Requirement Description
+
+FR-03.1
+
+HIGH
+
+The system shall provide a global search bar accessible without requiring login, returning results across all registered stores in under 2 seconds.
+
+FR-03.2
+
+HIGH
+
+The system shall aggregate search results from all active seller listings and present them on a unified results page.
+
+FR-03.3
+
+HIGH
+
+The system shall display a price comparison table for each product showing: Store Name, Price, Stock Status, Store Rating, and a direct Add-to-Cart button per row.
+
+FR-03.4
+
+HIGH
+
+The system shall visually highlight the lowest-priced in-stock listing for each product across all stores. [Benchmark: PriceCheck ZA, Google Shopping]
+
+FR-03.5
+
+HIGH
+
+The system should monitor and refresh all seller prices multiple times daily (minimum 3× per day) to maintain real-time accuracy. [Benchmark: PriceCheck ZA — multiple daily refreshes]
+
+FR-03.6
+
+HIGH
+
+The system should provide an AI-Assisted Buying Tool that automatically recommends the best-value product listing based on price, stock availability, seller rating, and delivery speed. [Benchmark: Price.com AI Tool]
+
+FR-03.7
+
+MEDIUM
+
+The system shall support advanced filtering: category, price range, store, stock status, seller rating, and brand.
+
+FR-03.8
+
+MEDIUM
+
+The system shall support sorting by price ascending/descending, relevance, newest listing, and highest-rated seller.
+
+FR-03.9
+
+MEDIUM
+
+The system shall display a price history graph per product showing price trends across all stores over the past 90 days. [Benchmark: PriceCheck ZA]
+
+FR-03.10
+
+LOW
+
+The system shall support price-drop alerts allowing registered buyers to subscribe to email notifications when a watched product's price falls below a target threshold.
+
+
+
+3.4 FR-04: Shopping Cart & Checkout
+
+Req. ID
+
+Priority
+
+Requirement Description
+
+FR-04.1
+
+HIGH
+
+The system shall allow authenticated buyers to add products from any seller to a unified cross-store cart.
+
+FR-04.2
+
+HIGH
+
+The system shall display itemized cart contents with per-store subtotals, grand total, and estimated delivery costs.
+
+FR-04.3
+
+HIGH
+
+The system shall integrate a primary payment gateway for online transaction processing (credit/debit card, mobile money). [Benchmark: Jumia KE, Shopify Payments]
+
+FR-04.4
+
+HIGH
+
+The system shall integrate a secondary payment gateway as fallback in the event of primary gateway downtime. [Benchmark: Shopify multi-gateway]
+
+FR-04.5
+
+HIGH
+
+The system shall send order confirmation emails to the buyer and order notification emails to each relevant seller upon successful payment.
+
+FR-04.6
+
+MEDIUM
+
+The system shall provide order tracking with status updates: Pending → Processing → Shipped → Out for Delivery → Delivered.
+
+FR-04.7
+
+MEDIUM
+
+The system shall retain cart contents for authenticated users across sessions for a minimum of 14 days.
+
+FR-04.8
+
+LOW
+
+The system shall support a guest checkout flow allowing purchase without registration, with an option to create an account post-purchase.
+
+
+
+3.5 FR-05: Landing Page
+
+Req. ID
+
+Priority
+
+Requirement Description
+
+FR-05.1
+
+HIGH
+
+The landing page shall present primary calls-to-action for Seller Registration and Buyer Registration above the fold.
+
+FR-05.2
+
+HIGH
+
+The landing page shall include a hero search bar enabling immediate product search without login.
+
+FR-05.3
+
+HIGH
+
+The landing page shall be fully responsive and optimised for mobile, tablet, and desktop viewports.
+
+FR-05.4
+
+MEDIUM
+
+The landing page shall feature sections for: Top-Rated Stores, Today's Best Prices, Trending Products, and Recently Added Listings.
+
+FR-05.5
+
+MEDIUM
+
+The landing page shall display trust indicators: number of registered stores, total products listed, and completed transactions.
+
+
+
+3.6 FR-06: Social Discussion & Review Module
+
+Req. ID
+
+Priority
+
+Requirement Description
+
+FR-06.1
+
+MEDIUM
+
+The system should provide a community forum where authenticated users create product-linked discussion threads with title and body text. [Benchmark: Price.com Social Layer]
+
+FR-06.2
+
+MEDIUM
+
+The system shall allow users to post comments, reply to threads, and react with likes/upvotes on any discussion.
+
+FR-06.3
+
+HIGH
+
+The system shall allow verified buyers to post star-rated product reviews (1–5 stars) with a written comment after completing a purchase. [Benchmark: Jumia KE — verified buyer reviews]
+
+FR-06.4
+
+MEDIUM
+
+The system shall aggregate seller ratings from all buyer reviews and display an average star rating on the seller's store page and all product listings.
+
+FR-06.5
+
+HIGH
+
+The system shall enable administrators to moderate, flag, hide, and permanently delete inappropriate content.
+
+FR-06.6
+
+LOW
+
+The system shall allow users to follow stores and receive in-app and email notifications for new listings, price drops, and discussion activity.
+
+
+
+3.7 FR-07: Company Profile & Static Content Pages
+
+Req. ID
+
+Priority
+
+Requirement Description
+
+FR-07.1
+
+HIGH
+
+The platform shall include a company profile page displaying the organization logo, mission statement, key platform features, and partner logos.
+
+FR-07.2
+
+HIGH
+
+The profile shall include a Seller Directory listing all registered sellers with business name, logo, product category, and a link to their store. [Benchmark: PriceCheck Shop Directory]
+
+FR-07.3
+
+HIGH
+
+The profile shall contain a 'How to Sell' guide explaining the full seller onboarding process with step-by-step instructions and video links.
+
+FR-07.4
+
+HIGH
+
+The profile shall clearly state the platform's commission structure and charging model for each seller tier.
+
+FR-07.5
+
+MEDIUM
+
+The profile shall include a Supplier Directory listing key product suppliers and brand partners.
+
+FR-07.6
+
+MEDIUM
+
+The profile shall include a Help Centre with FAQ, contact form, and live chat widget.
+
+
+
+3.8 FR-08: Platform Administration Suite
+
+Req. ID
+
+Priority
+
+Requirement Description
+
+FR-08.1
+
+HIGH
+
+The Admin Dashboard shall provide a real-time overview of: active users (sellers/buyers), total products listed, orders in processing, and daily revenue. [Benchmark: Jumia Admin]
+
+FR-08.2
+
+HIGH
+
+Administrators shall be able to activate, suspend, or permanently deactivate any seller or buyer account with mandatory audit logging.
+
+FR-08.3
+
+HIGH
+
+Administrators shall be able to approve or reject newly registered sellers following identity verification.
+
+FR-08.4
+
+MEDIUM
+
+The Admin Dashboard shall provide revenue reports filterable by period, seller, product category, and payment method.
+
+FR-08.5
+
+MEDIUM
+
+The system shall generate automated alerts to administrators when sellers have not refreshed product prices within the 30-day confirmation window.
+
+FR-08.6
+
+LOW
+
+The Admin Dashboard should provide SEO management tools: meta title/description editing, sitemap generation, and canonical URL management. [Benchmark: Shopify SEO suite]
+
+
+
+
+4. Non-Functional Requirements
+
+NFR ID
+
+Category
+
+Requirement
+
+NFR-01
+
+Performance
+
+Search results shall be returned in under 2 seconds for concurrent user loads of up to 10,000. [Benchmark: Google Shopping SLA]
+
+NFR-02
+
+Performance
+
+The price comparison engine shall refresh all seller prices by a minimum of 3 times per day. [Benchmark: PriceCheck ZA daily refresh policy]
+
+NFR-03
+
+Scalability
+
+The system shall horizontally scale to support a 300% increase in registered users without architectural redesign. [Benchmark: Jumia KE 6M+ listing scale]
+
+NFR-04
+
+Scalability
+
+The product catalogue shall support unlimited SKU listings per seller without performance degradation. [Benchmark: Shopify unlimited products]
+
+NFR-05
+
+Availability
+
+The platform should achieve 99.5% uptime; scheduled maintenance windows shall be communicated to users 48 hours in advance.
+
+NFR-06
+
+Security
+
+All data in transit shall be encrypted using TLS 1.3 or higher. Passwords shall be hashed using bcrypt (min. cost factor 12).
+
+NFR-07
+
+Security
+
+The system shall implement OWASP Top 10 protections: SQL injection prevention, XSS filtering, CSRF tokens, and rate limiting.
+
+NFR-08
+
+Security
+
+Payment processing shall comply with PCI-DSS Level 1 standards via the integrated payment gateway provider.
+
+NFR-09
+
+Usability
+
+The UI shall conform to WCAG 2.1 Level AA accessibility standards across all public-facing pages.
+
+NFR-10
+
+Usability
+
+A first-time seller shall be able to complete product registration and list their first product within 5 minutes of account activation.
+
+NFR-11
+
+Data Integrity
+
+Excel bulk uploads shall validate all mandatory fields and reject incomplete rows with row-level error feedback downloadable by the seller.
+
+NFR-12
+
+Data Integrity
+
+Order and transaction records shall be immutable once created; any amendments shall be recorded as separate audit entries.
+
+NFR-13
+
+Maintainability
+
+The codebase shall maintain a minimum 70% automated test coverage across unit and integration tests.
+
+NFR-14
+
+Compliance
+
+The system shall comply with applicable data protection legislation including GDPR principles: data minimization, right to erasure, and explicit consent at registration.
+
+NFR-15
+
+SEO
+
+All product listing pages shall be server-side rendered for search engine indexability. [Benchmark: Google Shopping, Shopify SEO]
+
+
+
+
+5. Business Use Cases
+
+5.1 Overview
+
+Business Use Cases capture the platform's value delivery to primary stakeholders at the strategic level, independent of technical implementation. Each BUC is informed by demonstrated commercial patterns from the benchmark platforms.
+
+
+
+5.2 BUC-01: Seller Onboards and Lists Products
+
+
+
+Business Objective
+
+Enable a seller to register, agree to commission terms, and have their product catalogue live and discoverable by buyers within 30 minutes of account approval — following the proven Jumia Vendor Hub and Shopify onboarding patterns.
+
+
+
+Business Goal
+
+Grow the seller base and increase platform product catalogue breadth at scale
+
+Primary Actor
+
+Seller / Vendor
+
+Trigger
+
+Seller visits platform and clicks 'Register as Seller'
+
+Business Value
+
+Drives product inventory depth, buyer engagement, and commission revenue
+
+Success Outcome
+
+Seller products are live and discoverable within 30 minutes of approval
+
+Failure Outcome
+
+Seller abandons due to complexity; catalogue remains offline; revenue lost
+
+Business Rules
+
+Sellers must accept commission policy. Products must carry exact names, pricing, and stock. 30-day price refresh required.
+
+Benchmark Pattern
+
+Jumia Vendor Center self-onboarding; Shopify unlimited SKU plan; Google Shopping feed upload
+
+
+
+5.3 BUC-02: Buyer Compares Prices and Purchases
+
+
+
+Business Objective
+
+Allow a buyer to find the best price for any product across all registered stores and complete a purchase in one session — replicating the PriceCheck real-time comparison and Price.com AI buying tool patterns.
+
+
+
+Business Goal
+
+Maximize buyer conversion rate and repeat purchase frequency
+
+Primary Actor
+
+Buyer
+
+Trigger
+
+Buyer searches for a specific product (e.g., 'HP Laptop')
+
+Business Value
+
+Consolidates buyer purchasing decision on the platform; increases transaction volume
+
+Success Outcome
+
+Buyer identifies best price via AI tool, adds to cart, pays, receives confirmation
+
+Failure Outcome
+
+Buyer leaves to compare prices externally; transaction lost to competitor
+
+Business Rules
+
+Price comparisons shall reflect real-time data refreshed at least 3× daily. AI Buying Tool recommendation must be explainable.
+
+Benchmark Pattern
+
+PriceCheck ZA real-time comparison; Price.com AI Buying Tool; Google Shopping lowest-price highlight
+
+
+
+5.4 BUC-03: Platform Administrator Manages Ecosystem
+
+
+
+Business Objective
+
+Equip the administrator with a full-featured suite to manage users, moderate content, resolve disputes, monitor revenue, and maintain platform health.
+
+
+
+Business Goal
+
+Maintain platform quality, trust, regulatory compliance, and operational health
+
+Primary Actor
+
+Platform Administrator
+
+Trigger
+
+Ongoing: triggered by user reports, price alerts, scheduled audits, or system events
+
+Business Value
+
+Protects brand reputation; ensures seller/buyer satisfaction; drives renewal and growth
+
+Success Outcome
+
+Platform sustains 4.5+ average seller rating; disputes resolved within 48 hours
+
+Business Rules
+
+Admin actions (suspensions, deletions, overrides) must be logged with timestamp and reason. Audit log is immutable.
+
+Benchmark Pattern
+
+Jumia Admin Suite; Shopify Admin Dashboard; PriceCheck seller verification workflow
+
+
+
+
+6. System Use Cases
+
+6.1 Use Case Summary
+
+UC ID
+
+Use Case Name
+
+Actor(s)
+
+Priority
+
+New
+
+UC-01
+
+Register as Seller
+
+Seller
+
+HIGH
+
+
+
+UC-02
+
+Register as Buyer
+
+Buyer
+
+HIGH
+
+
+
+UC-03
+
+Upload Products via Excel (Bulk)
+
+Seller
+
+HIGH
+
+
+
+UC-04
+
+Add Product Manually
+
+Seller
+
+HIGH
+
+
+
+UC-05
+
+Search Products
+
+Buyer, Guest
+
+HIGH
+
+
+
+UC-06
+
+Compare Product Prices (Real-Time)
+
+Buyer, Guest
+
+HIGH
+
+
+
+UC-07
+
+Use AI Buying Tool
+
+Buyer, Guest
+
+HIGH
+
+★
+
+UC-08
+
+Add to Cart
+
+Buyer
+
+HIGH
+
+
+
+UC-09
+
+Checkout & Pay
+
+Buyer
+
+HIGH
+
+
+
+UC-10
+
+Post & Rate Discussion / Review
+
+Buyer, Seller
+
+MEDIUM
+
+★
+
+UC-11
+
+Manage Seller Account & Analytics
+
+Seller
+
+MEDIUM
+
+★
+
+UC-12
+
+Administer Platform
+
+Admin
+
+HIGH
+
+
+
+UC-13
+
+View Company Profile & Seller Directory
+
+Guest, Buyer, Seller
+
+LOW
+
+★
+
+UC-14
+
+Set Price-Drop Alert
+
+Buyer
+
+LOW
+
+★
+
+★ = New use case added from competitive benchmarking
+
+
+
+6.2 Detailed Use Cases
+
+
+
+USE CASE — Register as Seller  [UC-01]
+
+Use Case ID
+
+UC-01
+
+Use Case Name
+
+Register as Seller
+
+Actor(s)
+
+Seller (Primary), Email System (Secondary)
+
+Description
+
+A new seller registers on the platform by providing business and personal details, selecting the Seller role, accepting the platform commission policy, and completing email verification.
+
+Preconditions
+
+User is not already registered. A User has valid email address and business information. Commission Policy has been published by the platform.
+
+Main Flow
+
+1. User navigates to Landing Page. 2. Clicks 'Register as Seller'. 3. Completes registration form: name, email, phone, business name, password. 4. Reviews and digitally accepts Terms & Conditions and Commission Policy. 5. Submits form. 6. System sends verification email. 7. Seller clicks verification link. 8. Account activated. 9. Seller redirected to Vendor Hub Dashboard.
+
+Alternate Flow
+
+Step 6: Email delivery fails → system prompts to resend. Step 7: Link expired → system offers renewal. Step 4: Seller declines commission terms → registration blocked; reason displayed.
+
+Postconditions
+
+Seller account is active. Vendor Hub is accessible. Seller can list products and view commission structure.
+
+Priority
+
+HIGH
+
+Benchmark Reference
+
+Jumia Vendor Center; Shopify Merchant Registration
+
+
+
+USE CASE — Upload Products via Excel (Bulk)  [UC-03]
+
+Use Case ID
+
+UC-03
+
+Use Case Name
+
+Upload Products via Excel (Bulk)
+
+Actor(s)
+
+Seller (Primary), File Processor (System)
+
+Description
+
+An authenticated seller uploads an Excel spreadsheet of product records. The system validates each row, processes valid entries, and generates a downloadable error report for rejected rows.
+
+Preconditions
+
+Seller is authenticated. Seller has downloaded and populated the platform's standard Excel template.
+
+Main Flow
+
+1. Seller opens Vendor Hub → 'Product Management' → 'Bulk Upload'. 2. Downloads standard .xlsx template. 3. Populates template with product data. 4. Uploads file. 5. System validates each row for mandatory fields, data types, and price format. 6. System displays preview: valid row count, invalid row count, first 5 errors. 7. Seller confirms upload. 8. Valid products saved and listed as active. 9. Error report generated and available for download.
+
+Alternate Flow
+
+File format not .xlsx → rejected with format error. Mandatory field missing → row flagged invalid; others processed. File exceeds 10MB → rejected with size error. Seller cancels at step 7 → no records saved.
+
+Postconditions
+
+Valid products are live and discoverable by buyers. Seller receives email confirmation of upload summary.
+
+Priority
+
+HIGH
+
+Benchmark Reference
+
+Jumia KE Vendor Bulk Upload; Google Shopping Product Feed
+
+
+
+USE CASE — Use AI Buying Tool  [UC-07]
+
+Use Case ID
+
+UC-07
+
+Use Case Name
+
+Use AI Buying Tool
+
+Actor(s)
+
+Buyer / Guest (Primary), AI Recommendation Engine (System)
+
+Description
+
+A user searches for a product and activates the AI Buying Tool which analyses all listings for that product across all stores and recommends the best-value option based on price, stock status, seller rating, and delivery speed.
+
+Preconditions
+
+At least one seller has the product listed as active. AI Buying Tool feature is enabled.
+
+Main Flow
+
+1. User searches for a product. 2. Comparison results page loads. 3. User clicks 'Find Best Value'. 4. AI Engine evaluates all active listings: price, stock status, seller rating, estimated delivery. 5. System surfaces top recommendation with a highlighted badge and a brief explanation ('Best value: lowest price from a 4.8★ seller with same-day delivery'). 6. User clicks 'Add to Cart' on the recommendation. 7. Product added to cart.
+
+Alternate Flow
+
+Step 4: Only one listing exists → tool shows that listing and notes no alternatives found. Step 4: All listings out of stock → tool returns 'No in-stock listings found; set a price-drop alert?' prompt.
+
+Postconditions
+
+User has received an AI-driven product recommendation. A product may be in cart. Recommendation data is logged for model improvement.
+
+Priority
+
+HIGH
+
+Benchmark Reference
+
+Price.com AI Buying Tool (1B+ product comparison engine)
+
+
+
+USE CASE — Checkout & Pay  [UC-09]
+
+Use Case ID
+
+UC-09
+
+Use Case Name
+
+Checkout & pay
+
+Actor(s)
+
+Buyer (Primary), Payment Gateway — Primary (Secondary), Payment Gateway — Fallback (Secondary), Sellers (Secondary)
+
+Description
+
+An authenticated buyer reviews their cart, confirms delivery address, selects payment method, and completes payment through the integrated primary gateway, with automatic failover to the secondary gateway if needed.
+
+Preconditions
+
+Buyer is authenticated. Cart contains at least one in-stock item.
+
+Main Flow
+
+1. Buyer navigates to Cart. 2. Review items, quantities, per-store subtotals, delivery estimate, and grand total. 3. Proceeds to Checkout. 4. Confirms or enters delivery address. 5. Selects payment method (card, mobile money). 6. Reviews final order summary. 7. Confirms payment. 8. Primary gateway processes transaction. 9. System records order with status 'Processing'. 10. Confirmation email sent to buyer; order notification sent to each relevant seller. 11. Inventory decremented per seller.
+
+Alternate Flow
+
+Step 8: Primary gateway fails → system automatically retries via secondary gateway; buyer notified of switch. Step 8: Both gateways fail → buyer notified; cart retained for retry. Stock depleted between cart-add and checkout → buyer notified; item flagged for removal.
+
+Postconditions
+
+Order created with status 'Processing'. Buyer receives confirmation. Sellers notified. Inventory updated. Commission recorded for platform.
+
+Priority
+
+HIGH
+
+Benchmark Reference
+
+Jumia KE Checkout; Shopify multi-gateway failover pattern
+
+
+
+USE CASE — Post & Rate Discussion / Review  [UC-10]
+
+Use Case ID
+
+UC-10
+
+Use Case Name
+
+Post & Rate Discussion / Review
+
+Actor(s)
+
+Buyer / Seller (Primary), Admin (Moderator)
+
+Description
+
+An authenticated user creates a product-linked discussion thread, or a verified buyer submits a star-rated review for a product they have purchased. Ratings are aggregated to the seller's store score.
+
+Preconditions
+
+User is authenticated. For reviews: buyer has completed a purchase of that specific product (verified purchase required).
+
+Main Flow
+
+Discussion: 1. User navigates to a product page. 2. Clicks 'Join Discussion'. 3. Enters thread title and body. 4. Submits. 5. Thread visible to all users. Review: 1. Buyer receives post-delivery prompt. 2. Clicks 'Write a Review'. 3. Selects star rating (1–5). 4. Writes review text. 5. Submits. 6. Review published on product and seller pages. 7. Seller's aggregate rating updated.
+
+Alternate Flow
+
+User tries to review without completed purchase → blocked with 'Verified purchase required'. Admin flags review → hidden pending investigation. Duplicate review attempt → system blocks with 'You have already reviewed this product'.
+
+Postconditions
+
+Discussion thread or review is live. Seller's aggregate rating is updated. Admin notified of any flagged content.
+
+Priority
+
+MEDIUM
+
+Benchmark Reference
+
+Price.com Social Layer; Jumia Verified Buyer Reviews
+
+
+
+
+7. Use Case Diagram — Textual Representation
+
+7.1 System Actors
+
+Actor
+
+Type
+
+Interacts With
+
+Guest / Visitor
+
+External Primary
+
+UC-05 (Search), UC-06 (Compare), UC-07 (AI Tool), UC-13 (Company Profile)
+
+Buyer
+
+External Primary
+
+UC-02, UC-05, UC-06, UC-07, UC-08, UC-09, UC-10, UC-14
+
+Seller
+
+External Primary
+
+UC-01, UC-03, UC-04, UC-10, UC-11
+
+Administrator
+
+Internal Primary
+
+UC-12 (all admin functions; content moderation)
+
+Email System
+
+External Secondary
+
+UC-01, UC-02, UC-09 (order notifications), UC-14 (price alerts)
+
+Payment Gateway — Primary
+
+External Secondary
+
+UC-09 (payment processing)
+
+Payment Gateway — Fallback
+
+External Secondary
+
+UC-09 (failover processing)
+
+File Processor
+
+System Component
+
+UC-03 (Excel validation and batch import)
+
+AI Recommendation Engine
+
+System Component
+
+UC-07 (best-value analysis and recommendation)
+
+Price Monitor
+
+System Component
+
+UC-06 (3× daily price refresh across all sellers)
+
+
+
+7.2 Use Case Relationship Map
+
+Base Use Case
+
+Relationship
+
+Related Use Case
+
+UC-08: Add to Cart
+
+<<include>>
+
+UC-05: Search Products (search precedes cart)
+
+UC-09: Checkout & pay
+
+<<include>>
+
+UC-08: Add to Cart (cart required for checkout)
+
+UC-09: Checkout & pay
+
+<<include>>
+
+UC-02: Register as Buyer (authentication required)
+
+UC-07: AI Buying Tool
+
+<<include>>
+
+UC-06: Compare Prices (tool extends comparison)
+
+UC-03: Bulk Upload
+
+<<extend>>
+
+UC-04: Add Manually (alternate product entry path)
+
+UC-06: Compare Prices
+
+<<include>>
+
+UC-05: Search Products
+
+UC-10: Discussion/Review
+
+<<extend>>
+
+UC-06: Compare Prices (discussion linked to product)
+
+UC-11: Manage Seller Account
+
+<<include>>
+
+UC-01: Register as Seller (account required)
+
+UC-12: Administer Platform
+
+<<include>>
+
+UC-01 / UC-02 (governs all user accounts)
+
+UC-14: Price-Drop Alert
+
+<<extend>>
+
+UC-06: Compare Prices (alert set from comparison page)
+
+
+
+7.3 Actor-to-Use Case Matrix
+
+Use Case
+
+Guest
+
+Buyer
+
+Seller
+
+Admin
+
+Email
+
+Pay 1
+
+Pay 2
+
+File
+
+AI
+
+UC-01 Register Seller
+
+-
+
+–
+
+●
+
+◑
+
+●
+
+–
+
+–
+
+–
+
+–
+
+UC-02 Register Buyer
+
+–
+
+●
+
+–
+
+◑
+
+●
+
+–
+
+–
+
+–
+
+–
+
+UC-03 Bulk Upload
+
+–
+
+–
+
+●
+
+–
+
+–
+
+–
+
+–
+
+●
+
+–
+
+UC-04 Manual Add
+
+–
+
+–
+
+●
+
+–
+
+–
+
+–
+
+–
+
+–
+
+–
+
+UC-05 Search
+
+●
+
+●
+
+●
+
+–
+
+–
+
+–
+
+–
+
+–
+
+–
+
+UC-06 Compare Prices
+
+●
+
+●
+
+–
+
+–
+
+–
+
+–
+
+–
+
+–
+
+◑
+
+UC-07 AI Buying Tool
+
+●
+
+●
+
+–
+
+–
+
+–
+
+–
+
+–
+
+–
+
+●
+
+UC-08 Add to Cart
+
+–
+
+●
+
+–
+
+–
+
+–
+
+–
+
+–
+
+–
+
+–
+
+UC-09 Checkout & Pay
+
+–
+
+●
+
+–
+
+–
+
+●
+
+●
+
+●
+
+–
+
+–
+
+UC-10 Discussion/Review
+
+–
+
+●
+
+●
+
+◑
+
+–
+
+–
+
+–
+
+–
+
+–
+
+UC-11 Seller Analytics
+
+–
+
+–
+
+●
+
+–
+
+–
+
+–
+
+–
+
+–
+
+–
+
+UC-12 Admin
+
+–
+
+–
+
+–
+
+●
+
+–
+
+–
+
+–
+
+–
+
+–
+
+UC-13 Company Profile
+
+●
+
+●
+
+●
+
+–
+
+–
+
+–
+
+–
+
+–
+
+–
+
+UC-14 Price Alert
+
+–
+
+●
+
+–
+
+–
+
+●
+
+–
+
+–
+
+–
+
+◑
+
+● Primary Actor   ◑ Secondary / Supporting Actor   – Not Involved   AI = AI Recommendation Engine
+
+
+
+
+8. Data Requirements
+
+8.1 Core Data Entities
+
+Entity
+
+Key Attributes
+
+Relationships
+
+User
+
+user_id, name, email, phone, role, password_hash, status, verified, created_at
+
+One User → One Seller Profile OR One Buyer Profile
+
+Seller Profile
+
+seller_id, user_id, business_name, logo, description, commission_rate, verified, rating_avg, payout_account
+
+One Seller → Many Products; One Seller → Many Orders (as supplier)
+
+Product
+
+product_id, seller_id, name, description, price, category, stock_qty, status, images[], sku, created_at, price_last_confirmed
+
+Many Products → One Seller; Many Products → Many Cart Items; One Product → Many Reviews
+
+Price History
+
+price_history_id, product_id, seller_id, price, recorded_at
+
+Many PriceHistory → One Product (90-day trend)
+
+Cart
+
+cart_id, buyer_id, created_at, updated_at, expires_at
+
+One Cart → Many Cart Items; One Cart → One Order
+
+Cart Item
+
+cart_item_id, cart_id, product_id, quantity, unit_price_at_add
+
+Many Cart Items → One Product
+
+Order
+
+order_id, buyer_id, total_amount, commission_amount, status, payment_ref, gateway_used, created_at
+
+One Order → Many Order Items
+
+Review
+
+review_id, product_id, seller_id, buyer_id, stars, body, verified_purchase, created_at
+
+Many Reviews → One Product; Many Reviews → One Seller
+
+Discussion Thread
+
+thread_id, user_id, product_id, title, body, likes, created_at
+
+Many Threads → One Product or General Forum
+
+Price Alert
+
+alert_id, buyer_id, product_id, target_price, status, created_at
+
+One Alert → One Product; One Alert → One Buyer
+
+
+
+8.2 Product Price Comparison Data — Illustrative Example
+
+The table below demonstrates the price comparison feature using real product data provided in the project brief, showing how the platform surfaces the lowest price per product across three stores:
+
+
+
+Product
+
+Store 1 (US $)
+
+Store 2 (US $))
+
+Store 3 (US $))
+
+Best
+
+HP Laptop
+
+$233.44
+
+$272.34
+
+$194.53
+
+★3
+
+HP Printer
+
+$93.38
+
+$54.47
+
+$116.72
+
+★2
+
+Photocopying Paper
+
+$38.91
+
+$15.56
+
+$46.69
+
+★2
+
+DELL Printer B1160W
+
+$116.72
+
+$101.16
+
+$140.06
+
+★3
+
+TOTAL (all items)
+
+$482.45
+
+$443.53
+
+$498.00
+
+
+
+Green highlight = lowest price for that product. ★n = Store number with best price. AI Buying Tool would recommend Store 2 for the basket (US$ 443.43).
+
+
+
+
+9. Project Milestones & Delivery Phases
+
+
+
+Delivery Principle
+
+Following the agreed principle of small iterative milestones, the project is structured into four phases. Each phase delivers independently testable, commercially demonstrable functionality.
+
+
+
+Phase
+
+Milestone
+
+Deliverables
+
+Priority
+
+1
+
+Foundation
+
+User Registration (Seller & Buyer), Email Verification, RBAC, Commission Policy Acceptance, Basic Landing Page with Search Bar, SSL/TLS setup
+
+HIGH
+
+2
+
+Product Engine
+
+Vendor Hub Dashboard, Manual Product Entry, Excel Bulk Upload with Validation, Error Reporting, Product Catalogue with Seller-Preserved Names, 30-Day Price Confirmation Prompts
+
+HIGH
+
+3
+
+Buyer Experience
+
+Real-Time Price Comparison Engine (3× daily refresh), AI Buying Tool, Price History (90-day), Cart, Checkout, Primary & Fallback Payment Gateway, Order Tracking, Seller Analytics Dashboard
+
+HIGH
+
+4
+
+Engagement & Trust
+
+Verified Buyer Reviews, Star Ratings, Social Discussion Module, Price-Drop Alerts, Company Profile, Seller Directory, Admin Suite, Revenue Reporting, SEO Controls
+
+MEDIUM
+
+
+
+
+10. Assumptions, Constraints & Risks
+
+Type
+
+Item
+
+Detail
+
+Assumption
+
+Seller Responsibility
+
+Sellers are responsible for the accuracy of product names, prices, and stock levels as submitted.
+
+Assumption
+
+Template Adoption
+
+All sellers will use the platform-provided Excel template without structural modification.
+
+Assumption
+
+Internet Access
+
+All users have reliable internet access to use the platform.
+
+Assumption
+
+Price Honesty
+
+Sellers will update prices promptly. Platform enforces 30-day confirmation cycle to mitigate stale data.
+
+Constraint
+
+Technology Stack
+
+Development must use standard web technologies compatible with widely available cloud infrastructure.
+
+Constraint
+
+Budget — Phase 1 & 2
+
+Initial delivery scope is limited to Phase 1 and Phase 2 features per agreed milestones.
+
+Constraint
+
+Currency
+
+Platform defaults to US$; multi-currency support is a post-launch enhancement.
+
+Risk
+
+Low Seller Adoption
+
+Sellers may resist digital onboarding. Mitigation: Assisted Upload Service for first catalogue (FR-02.10). [Lesson from Jumia KE onboarding]
+
+Risk
+
+Price Data Accuracy
+
+Sellers may fail to update prices promptly. Mitigation: 30-day mandatory confirmation; automated admin alerts (FR-08.5).
+
+Risk
+
+Payment Gateway Downtime
+
+Primary gateway outage affects checkout. Mitigation: Secondary fallback gateway integrated (FR-04.4). [Benchmark: Shopify multi-gateway]
+
+Risk
+
+AI Tool Trust
+
+Buyers may not trust AI recommendations. Mitigation: Recommendation explanations displayed in plain language (UC-07 Main Flow). [Benchmark: Price.com]
+
+Risk
+
+Content Moderation Load
+
+Social module generates user content requiring moderation at scale. Mitigation: Admin alert system and community flagging (FR-06.5, FR-08.2).
+
+
+
+
+11. Document Change Log
+
+Version
+
+Date
+
+Author
+
+Changes
+
+1.0
+
+March 2026
+
+Business Systems Analysis Team
+
+Initial draft — scope from client project brief
+
+2.0
+
+March 2026
+
+Business Systems Analysis Team
+
+Commercial redraft — integrated benchmarking from Jumia KE, PriceCheck ZA, Google Shopping, Price.com, Shopify; added AI Buying Tool (UC-07), Price History (FR-03.9), Price-Drop Alerts (UC-14), Verified Reviews (FR-06.3), Seller Analytics (FR-02.8), Assisted Upload (FR-02.10), Fallback Payment Gateway (FR-04.4), Admin SEO Controls (FR-08.6); updated all sections to commercial standard
+
+3.0
+
+March 2026
+
+Business Systems Analysis Team
+
+Grammer, change of default price to $, corrections of V2
+
+
+
+12. Approval & Sign-Off
+
+By signing below, each stakeholder confirms they have reviewed this Systems Requirements Specification v2.0 and approve it as the authoritative basis for development.
+
+
+
+Role
+
+Name
+
+Date
+
+Signature/Initial
+
+Business Owner / Sponsor
+
+Nicholas B.N Nyakundi
+
+March 25th 2026
+
+BNN
+
+Lead Business Analyst
+
+Nicholas B.N Nyakundi
+
+March 25th 2026
+
+BNN
+
+Lead Developer / Architect
+
+Douglas Ratemo
+
+March 25th 2026
+
+DR
+
+QA Lead
+
+Douglas Ratemo
+
+March 25th 2026
+
+DR
+
+Legal / Compliance
+
+TBA
+
+
+
+
+
+
+
+	COMMERCIAL — CONFIDENTIAL	Page 1 of 2

@@ -13,22 +13,56 @@ export interface RegisterPayload {
   phone: string;
   role: UserRole;
   businessName?: string;
+  commission_accepted?: boolean;
 }
 
 interface AuthResponse {
   status: string;
-  message: string;
-  data: {
+  message?: string;
+  requires_2fa?: boolean;
+  temp_token?: string;
+  data?: {
     access: string;
     refresh: string;
     user: User;
   };
 }
 
+const mapUser = (u: any): User => ({
+  id: String(u.id),
+  fullName: u.name || '',
+  email: u.email || '',
+  phone: u.phone || '',
+  role: u.role as UserRole,
+  isVerified: !!u.verified,
+  isActive: u.is_active !== false,
+  is2faEnabled: !!u.is_2fa_enabled,
+  createdAt: u.date_joined || new Date().toISOString(),
+});
+
 export const djangoAuth = {
   login: async (payload: LoginPayload) => {
     const res = await http.post<AuthResponse>('/auth/login/', payload, { requireAuth: false });
-    const { access, refresh, user } = res.data;
+    
+    if (res.requires_2fa) {
+      return { requires2FA: true, tempToken: res.temp_token };
+    }
+    
+    if (!res.data) throw new Error('Invalid response');
+    
+    const { access, refresh, user: rawUser } = res.data;
+    const user = mapUser(rawUser);
+    tokenStorage.saveTokens(access, refresh);
+    localStorage.setItem(AUTH_KEYS.USER, JSON.stringify(user));
+    return { user, requires2FA: false };
+  },
+
+  login2FA: async (tempToken: string, code: string) => {
+    const res = await http.post<AuthResponse>('/auth/login/2fa/', { temp_token: tempToken, otp: code }, { requireAuth: false });
+    if (!res.data) throw new Error('Invalid response');
+    
+    const { access, refresh, user: rawUser } = res.data;
+    const user = mapUser(rawUser);
     tokenStorage.saveTokens(access, refresh);
     localStorage.setItem(AUTH_KEYS.USER, JSON.stringify(user));
     return { user };
@@ -36,10 +70,23 @@ export const djangoAuth = {
 
   register: async (payload: RegisterPayload) => {
     const res = await http.post<AuthResponse>('/auth/register/', payload, { requireAuth: false });
-    const { access, refresh, user } = res.data;
+    if (!res.data) throw new Error('Invalid response');
+    
+    const { access, refresh, user: rawUser } = res.data;
+    const user = mapUser(rawUser);
     tokenStorage.saveTokens(access, refresh);
     localStorage.setItem(AUTH_KEYS.USER, JSON.stringify(user));
     return { user };
+  },
+
+  setup2FA: async () => {
+    const res = await http.post<{ secret: string, provisioning_uri: string }>('/auth/2fa/setup/', {});
+    return res;
+  },
+
+  verify2FASetup: async (code: string) => {
+    const res = await http.post<{ status: string, message: string }>('/auth/2fa/verify-setup/', { otp: code });
+    return res;
   },
 
   logout: async () => {
@@ -53,5 +100,8 @@ export const djangoAuth = {
     }
   },
 
-  me: () => http.get<User>('/auth/profile/'),
+  me: async () => {
+    const rawUser = await http.get<any>('/auth/profile/');
+    return mapUser(rawUser);
+  },
 };

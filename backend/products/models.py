@@ -44,6 +44,8 @@ class Product(models.Model):
     is_active = models.BooleanField(default=True, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    views_count = models.PositiveIntegerField(default=0)
+    clicks_count = models.PositiveIntegerField(default=0)
 
     class Meta:
         db_table = 'products'
@@ -110,3 +112,23 @@ class ProductImage(models.Model):
 
     def __str__(self):
         return f'Image for {self.product.name}'
+
+class Collection(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=100)
+    slug = models.SlugField(max_length=120)
+    seller = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='collections',
+        limit_choices_to={'role': 'seller'}
+    )
+    products = models.ManyToManyField(Product, related_name='collections', blank=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'collections'
+        ordering = ['-created_at']
+        unique_together = ('seller', 'slug')
+
+    def __str__(self):
+        return self.name

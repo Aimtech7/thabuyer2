@@ -9,6 +9,7 @@ export interface User {
   businessName?: string;
   isVerified: boolean;
   isActive: boolean;
+  is2faEnabled?: boolean;
   createdAt: string;
 }
 

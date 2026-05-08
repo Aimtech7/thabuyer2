@@ -26,6 +26,9 @@ urlpatterns = [
     # Admin Panel
     path('admin/', include('admin_panel.urls')),
 
+    # Promotions
+    path('promotions/', include('promotions.urls')),
+
     # AI Engine
     path('ai/', include('ai_engine.urls')),
 ]
