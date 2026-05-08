@@ -11,7 +11,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from core.permissions import IsSeller, IsSellerOrAdmin
+from core.permissions import IsSeller, IsSellerOrAdmin, IsCompliantSeller
 from core.pagination import StandardResultsPagination
 from .filters import ProductFilter
 from .models import Product, Category
@@ -69,10 +69,9 @@ class ProductDetailView(generics.RetrieveAPIView):
 
     def get_object(self):
         obj = super().get_object()
-        # Increment views count
-        from django.db.models import F
-        Product.objects.filter(pk=obj.pk).update(views_count=F('views_count') + 1)
-        obj.refresh_from_db(fields=['views_count'])
+        # Increment views count asynchronously
+        from .tasks import increment_product_views
+        increment_product_views.delay(str(obj.pk))
         return obj
 
 class ProductClickView(APIView):
@@ -80,9 +79,10 @@ class ProductClickView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request, pk):
-        from django.db.models import F
-        updated = Product.objects.filter(pk=pk, is_active=True).update(clicks_count=F('clicks_count') + 1)
-        if updated:
+        from .tasks import increment_product_clicks
+        # Check if product exists before queuing task
+        if Product.objects.filter(pk=pk, is_active=True).exists():
+            increment_product_clicks.delay(str(pk))
             return Response({'status': 'success'})
         return Response({'status': 'error', 'message': 'Product not found'}, status=404)
 
@@ -90,14 +90,14 @@ class ProductClickView(APIView):
 class ProductCreateView(generics.CreateAPIView):
     """Create a product (sellers only)."""
     serializer_class = ProductCreateSerializer
-    permission_classes = [IsSeller]
+    permission_classes = [IsCompliantSeller]
     parser_classes = [MultiPartParser, FormParser, JSONParser]
 
 
 class ProductUpdateView(generics.UpdateAPIView):
     """Update a product (owner seller or admin only)."""
     serializer_class = ProductCreateSerializer
-    permission_classes = [IsSeller]
+    permission_classes = [IsCompliantSeller]
     http_method_names = ['put', 'patch']
 
     def get_queryset(self):
@@ -198,7 +198,7 @@ class ProductBulkUploadView(APIView):
     Bulk product upload via Excel (.xlsx).
     Validates every row and returns a detailed error report.
     """
-    permission_classes = [IsSeller]
+    permission_classes = [IsCompliantSeller]
     parser_classes = [MultiPartParser]
 
     def post(self, request):
@@ -233,7 +233,11 @@ class ProductBulkUploadView(APIView):
             )
 
         col_map = {v: i for i, v in enumerate(headers)}
-        created, errors = [], []
+        products_to_create = []
+        created_skus, errors = [], []
+        
+        # Performance optimization: pre-fetch existing categories
+        all_categories = {c.name.lower(): c for c in Category.objects.all()}
 
         for row_num, row in enumerate(ws.iter_rows(min_row=2, values_only=True), start=2):
             if not any(row):
@@ -252,34 +256,48 @@ class ProductBulkUploadView(APIView):
                 category_name = data.pop('category', '')
                 category = None
                 if category_name:
-                    category, _ = Category.objects.get_or_create(
-                        name=category_name,
-                        defaults={'slug': category_name.lower().replace(' ', '-')}
-                    )
-                try:
-                    Product.objects.create(
-                        seller=request.user,
-                        category=category,
-                        **data,
-                    )
-                    created.append(row_data['SKU'])
-                except Exception as e:
-                    errors.append({'row': row_num, 'SKU': row_data.get('SKU'), 'error': str(e)})
+                    category_name_lower = category_name.lower()
+                    if category_name_lower in all_categories:
+                        category = all_categories[category_name_lower]
+                    else:
+                        # Fallback for new categories (rare during bulk upload usually)
+                        category, created = Category.objects.get_or_create(
+                            name=category_name,
+                            defaults={'slug': category_name.lower().replace(' ', '-')}
+                        )
+                        all_categories[category_name_lower] = category
+
+                products_to_create.append(Product(
+                    seller=request.user,
+                    category=category,
+                    **data
+                ))
+                created_skus.append(row_data['SKU'])
             else:
                 errors.append({'row': row_num, 'data': row_data, 'errors': serializer.errors})
 
+        # Final Bulk Insert
+        if products_to_create:
+            try:
+                Product.objects.bulk_create(products_to_create, batch_size=500)
+            except Exception as e:
+                return Response(
+                    {'status': 'error', 'message': f'Bulk creation failed: {e}'},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
+
         return Response({
             'status': 'success',
-            'created_count': len(created),
+            'created_count': len(products_to_create),
             'error_count': len(errors),
-            'created_skus': created,
+            'created_skus': created_skus,
             'errors': errors,
         }, status=status.HTTP_207_MULTI_STATUS if errors else status.HTTP_201_CREATED)
 
 class CollectionListCreateView(generics.ListCreateAPIView):
     """Sellers can list and create custom collections."""
     serializer_class = CollectionSerializer
-    permission_classes = [IsSeller]
+    permission_classes = [IsCompliantSeller]
 
     def get_queryset(self):
         from .models import Collection

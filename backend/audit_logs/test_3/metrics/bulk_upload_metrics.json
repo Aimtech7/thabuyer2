@@ -1,0 +1,6 @@
+{
+    "scenario": "Bulk Upload Serial Throughput",
+    "count": 50,
+    "total_latency_ms": 98.12,
+    "per_record_ms": 1.96
+}

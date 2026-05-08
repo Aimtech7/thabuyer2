@@ -35,3 +35,32 @@ def generate_daily_report():
     }
     logger.info('Daily Report: %s', report)
     return report
+
+
+@shared_task(name='admin_panel.tasks.check_system_health')
+def check_system_health():
+    """Checks the health of various components (DB, Redis, etc.)"""
+    from django.db import connections
+    from django.utils import timezone
+    import redis
+    from django.conf import settings
+
+    status = {'db': 'ok', 'redis': 'ok', 'timestamp': str(timezone.now())}
+
+    # DB Check
+    try:
+        db_conn = connections['default']
+        with db_conn.cursor() as cursor:
+            cursor.execute("SELECT 1")
+    except Exception as e:
+        status['db'] = f'error: {str(e)}'
+
+    # Redis Check (via Celery Broker URL)
+    try:
+        r = redis.from_url(settings.CELERY_BROKER_URL)
+        r.ping()
+    except Exception as e:
+        status['redis'] = f'error: {str(e)}'
+
+    logger.info('System Health Check: %s', status)
+    return status

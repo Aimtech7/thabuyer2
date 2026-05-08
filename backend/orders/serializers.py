@@ -34,15 +34,33 @@ class CheckoutSerializer(serializers.Serializer):
     notes = serializers.CharField(required=False, allow_blank=True, default='')
     payment_ref = serializers.CharField(required=False, allow_blank=True, default='')
     coupon_code = serializers.CharField(required=False, allow_blank=True, default='')
+    guest_email = serializers.EmailField(required=False, allow_null=True)
+    session_id = serializers.CharField(required=False, allow_blank=True)
 
     def validate(self, attrs):
         user = self.context['request'].user
-        try:
-            cart = user.cart
-        except Exception:
-            raise serializers.ValidationError('No cart found.')
+        guest_email = attrs.get('guest_email')
+        session_id = attrs.get('session_id')
+
+        if user.is_authenticated:
+            try:
+                cart = user.cart
+            except Exception:
+                raise serializers.ValidationError('No cart found for this user.')
+        else:
+            if not guest_email:
+                raise serializers.ValidationError({'guest_email': 'Email is required for guest checkout.'})
+            if not session_id:
+                raise serializers.ValidationError({'session_id': 'Session ID is required for guest checkout.'})
+            
+            from cart.models import Cart
+            cart = Cart.objects.filter(session_id=session_id).first()
+            if not cart:
+                raise serializers.ValidationError('No guest cart found for this session.')
+
         if not cart.items.exists():
             raise serializers.ValidationError('Cart is empty.')
+        
         attrs['cart'] = cart
 
         coupon_code = attrs.get('coupon_code')

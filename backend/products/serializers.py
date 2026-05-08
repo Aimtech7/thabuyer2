@@ -116,13 +116,26 @@ class ProductCompareSerializer(serializers.Serializer):
 class CollectionSerializer(serializers.ModelSerializer):
     products = ProductSerializer(many=True, read_only=True)
     product_ids = serializers.PrimaryKeyRelatedField(
-        queryset=Product.objects.all(), source='products', many=True, write_only=True
+        queryset=Product.objects.all(), source='products', many=True, write_only=True, required=False
     )
 
     class Meta:
         model = Collection
         fields = ('id', 'name', 'slug', 'products', 'product_ids', 'is_active', 'created_at')
         read_only_fields = ('id', 'slug', 'created_at')
+
+    def validate_product_ids(self, value):
+        """Ensure all products belong to the requesting seller."""
+        request = self.context.get('request')
+        if not request or not request.user:
+            return value
+        
+        for product in value:
+            if product.seller != request.user:
+                raise serializers.ValidationError(
+                    f"Product {product.id} does not belong to you."
+                )
+        return value
 
     def create(self, validated_data):
         products = validated_data.pop('products', [])

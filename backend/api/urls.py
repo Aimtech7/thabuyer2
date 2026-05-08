@@ -26,9 +26,24 @@ urlpatterns = [
     # Admin Panel
     path('admin/', include('admin_panel.urls')),
 
-    # Promotions
+    # Promotions (Coupons + Promo Pricing)
     path('promotions/', include('promotions.urls')),
 
     # AI Engine
     path('ai/', include('ai_engine.urls')),
+
+    # Notifications (REST endpoints)
+    path('notifications/', include('notifications.urls')),
+
+    # Wishlists
+    path('wishlist/', include('wishlists.urls')),
+
+    # Messaging
+    path('messages/', include('messaging.urls')),
+
+    # Analytics
+    path('analytics/', include('analytics.urls')),
+
+    # Shipping & Tracking
+    path('shipping/', include('shipping.urls')),
 ]

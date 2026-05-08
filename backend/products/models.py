@@ -1,6 +1,7 @@
 """products/models.py"""
 import uuid
 from django.db import models
+from django.contrib.postgres.indexes import GinIndex
 from django.core.validators import MinValueValidator
 from users.models import User
 
@@ -54,6 +55,9 @@ class Product(models.Model):
             models.Index(fields=['seller', 'is_active']),
             models.Index(fields=['category', 'is_active']),
             models.Index(fields=['price']),
+            GinIndex(fields=['name'], opclasses=['gin_trgm_ops'], name='product_name_trgm_idx'),
+            GinIndex(fields=['description'], opclasses=['gin_trgm_ops'], name='product_desc_trgm_idx'),
+            GinIndex(fields=['SKU'], opclasses=['gin_trgm_ops'], name='product_sku_trgm_idx'),
         ]
 
     def __str__(self):
@@ -132,3 +136,25 @@ class Collection(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class SEOConfig(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    meta_title = models.CharField(max_length=200, blank=True)
+    meta_description = models.TextField(blank=True)
+    meta_keywords = models.CharField(max_length=500, blank=True, help_text="Comma-separated keywords")
+    canonical_url = models.URLField(blank=True)
+
+    # Linking to content
+    product = models.OneToOneField(Product, on_delete=models.CASCADE, null=True, blank=True, related_name='seo')
+    category = models.OneToOneField(Category, on_delete=models.CASCADE, null=True, blank=True, related_name='seo')
+
+    class Meta:
+        db_table = 'seo_configs'
+
+    def __str__(self):
+        if self.product:
+            return f"SEO: {self.product.name}"
+        if self.category:
+            return f"SEO: {self.category.name}"
+        return f"SEO Config {self.id}"

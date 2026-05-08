@@ -60,6 +60,10 @@ LOCAL_APPS = [
     'ai_engine',
     'promotions',
     'notifications',
+    'wishlists',
+    'messaging',
+    'analytics',
+    'shipping',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -111,7 +115,6 @@ CHANNEL_LAYERS = {
 
 # Database
 import dj_database_url
-from decouple import config
 
 TESTING = 'test' in sys.argv or 'pytest' in sys.modules
 
@@ -125,9 +128,9 @@ if TESTING:
 else:
     DATABASES = {
         'default': dj_database_url.config(
-            default=config('DATABASE_URL'),
+            default=env('DATABASE_URL'),
             conn_max_age=600,
-            ssl_require=True
+            ssl_require=not DEBUG # Disable SSL requirement in DEBUG mode
         )
     }
 

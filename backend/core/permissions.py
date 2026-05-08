@@ -82,3 +82,16 @@ class IsVerifiedSeller(BasePermission):
             hasattr(request.user, 'seller_profile')
             and request.user.seller_profile.verified
         )
+
+
+class IsCompliantSeller(BasePermission):
+    """Sellers who have accepted the commission policy."""
+    message = 'You must accept the commission policy to proceed.'
+
+    def has_permission(self, request, view):
+        if not (request.user.is_authenticated and request.user.role == 'seller'):
+            return False
+        return (
+            hasattr(request.user, 'seller_profile')
+            and request.user.seller_profile.commission_accepted
+        )

@@ -1,0 +1,8 @@
+{
+    "scenario": "Catalog Concurrency",
+    "total_requests": 100,
+    "avg_latency_ms": 158.5,
+    "max_latency_ms": 333.7,
+    "cpu_usage_start": 70.1,
+    "mem_usage_start": 83.5
+}

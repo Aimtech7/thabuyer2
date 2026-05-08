@@ -1,3 +1,4 @@
+import uuid
 from django.db import models
 from django.core.validators import MinValueValidator
 from sellers.models import SellerProfile
@@ -8,6 +9,7 @@ class Coupon(models.Model):
         ('percent', 'Percentage'),
     ]
 
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     code = models.CharField(max_length=50, unique=True, db_index=True)
     discount_type = models.CharField(max_length=10, choices=DISCOUNT_TYPES, default='fixed')
     discount_amount = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
@@ -39,6 +41,7 @@ class Coupon(models.Model):
         return True
 
 class PromoPricing(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     product = models.OneToOneField('products.Product', on_delete=models.CASCADE, related_name='promo_pricing')
     promo_price = models.DecimalField(max_digits=12, decimal_places=2, validators=[MinValueValidator(0)])
     start_date = models.DateTimeField()

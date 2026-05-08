@@ -77,6 +77,12 @@ def admin_client(admin_user):
     return _auth_client(admin_user)
 
 
+# Alias so tests can use `seller` as a shorthand for `seller_user`
+@pytest.fixture
+def seller(seller_user):
+    return seller_user
+
+
 # ─── Seller profile fixture ────────────────────────────────────────────────────
 
 @pytest.fixture

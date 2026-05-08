@@ -21,6 +21,7 @@ backend/__pycache__/
 backend/*.py[cod]
 backend/*$py.class
 backend/venv/
+backend/env
 backend/env/
 backend/ENV/
 backend/db.sqlite3

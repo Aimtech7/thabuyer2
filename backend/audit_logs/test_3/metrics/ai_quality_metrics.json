@@ -1,0 +1,17 @@
+{
+    "candidate_count": 1000,
+    "scoring_latency_ms": 15.18,
+    "top_pick": {
+        "name": "Laptop 999",
+        "score": 0.9,
+        "explanation": "Excellent overall value. Competitively priced at $1. Highly rated seller (4.9/5)."
+    },
+    "bottom_pick": {
+        "name": "Laptop 0",
+        "score": 0.1
+    },
+    "score_distribution": {
+        "above_80": 32,
+        "below_40": 283
+    }
+}

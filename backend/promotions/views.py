@@ -10,7 +10,7 @@ class CouponListCreateView(generics.ListCreateAPIView):
     permission_classes = [IsSeller]
 
     def get_queryset(self):
-        return Coupon.objects.filter(seller=self.request.user)
+        return Coupon.objects.filter(seller_restricted__user=self.request.user)
 
 class CouponDetailView(generics.RetrieveUpdateDestroyAPIView):
     """Sellers can manage a specific coupon."""
@@ -18,7 +18,7 @@ class CouponDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsSeller]
 
     def get_queryset(self):
-        return Coupon.objects.filter(seller=self.request.user)
+        return Coupon.objects.filter(seller_restricted__user=self.request.user)
 
 class PromoPricingListCreateView(generics.ListCreateAPIView):
     """Sellers can create and list their promotional pricing."""

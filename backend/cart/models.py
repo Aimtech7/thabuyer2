@@ -9,8 +9,10 @@ class Cart(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     buyer = models.OneToOneField(
         User, on_delete=models.CASCADE, related_name='cart',
+        null=True, blank=True,
         limit_choices_to={'role': 'buyer'}
     )
+    session_id = models.CharField(max_length=255, null=True, blank=True, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

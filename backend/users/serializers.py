@@ -25,6 +25,13 @@ class RegisterSerializer(serializers.ModelSerializer):
         # Prevent self-assigning admin role
         if attrs.get('role') == 'admin':
             raise serializers.ValidationError({'role': 'Cannot self-register as admin.'})
+        
+        # Enforce commission policy for sellers
+        if attrs.get('role') == 'seller':
+            commission_accepted = self.initial_data.get('commission_accepted')
+            if not commission_accepted:
+                raise serializers.ValidationError({'commission_accepted': 'Sellers must accept the commission policy.'})
+        
         return attrs
 
     def create(self, validated_data):

@@ -1,0 +1,5 @@
+{
+    "scenario": "Search Complexity (Postgres)",
+    "avg_search_latency_ms": 8.12,
+    "complexity": "O(N) - IC contains"
+}

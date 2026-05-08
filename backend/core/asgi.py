@@ -7,7 +7,8 @@ django_asgi_app = get_asgi_application()
 
 from channels.auth import AuthMiddlewareStack
 from channels.routing import ProtocolTypeRouter, URLRouter
-from notifications import routing
+from notifications import routing as notifications_routing
+from messaging import routing as messaging_routing
 from core.websocket_auth import JWTAuthMiddleware
 
 application = ProtocolTypeRouter({
@@ -15,7 +16,8 @@ application = ProtocolTypeRouter({
     "websocket": JWTAuthMiddleware(
         AuthMiddlewareStack(
             URLRouter(
-                routing.websocket_urlpatterns
+                notifications_routing.websocket_urlpatterns +
+                messaging_routing.websocket_urlpatterns
             )
         )
     ),

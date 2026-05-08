@@ -18,9 +18,10 @@ class Order(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     buyer = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='orders',
+        User, on_delete=models.SET_NULL, null=True, blank=True, related_name='orders',
         limit_choices_to={'role': 'buyer'}
     )
+    guest_email = models.EmailField(null=True, blank=True, db_index=True)
     total_amount = models.DecimalField(
         max_digits=14, decimal_places=2, validators=[MinValueValidator(0)]
     )
